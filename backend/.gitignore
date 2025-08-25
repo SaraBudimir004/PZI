@@ -1,0 +1,11 @@
+# Ignoriraj .env datoteku koja sadrži tajne API ključeve
+.env
+
+# Ignoriraj virtualna okruženja
+llama_env/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+# Ignoriraj ostale privremene datoteke
+.DS_Store
