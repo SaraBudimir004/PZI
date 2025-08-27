@@ -3,12 +3,13 @@ const User = require('../models/user');
 
 // Middleware za provjeru prijave
 const protect = async (req, res, next) => {
+    console.log("Auth header primljen:", req.headers.authorization); // << ovo
     let token;
 
     try {
         if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
             token = req.headers.authorization.split(" ")[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
             // Ako je gost
             if (decoded.role === "guest") {
@@ -21,7 +22,7 @@ const protect = async (req, res, next) => {
                 return res.status(401).json({ message: "Korisnik nije pronađen." });
             }
 
-            req.user =  { id: user.id, role: user.role };
+            req.user =  { id: user.id, role: user.role, name: user.name  };
             next();
         } else {
             return res.status(401).json({ message: "Token nije pronađen." });

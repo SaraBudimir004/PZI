@@ -1,4 +1,79 @@
 const fs = require("fs");
+const Pdf = require("../models/pdf"); // Tvoj Mongoose model PDF-a
+const pdfParse = require("pdf-parse");
+
+exports.uploadPdf = async (req, res) => {
+    try {
+        // ✅ Provjera da li je poslan file
+        if (!req.file) {
+            return res.status(400).json({ error: "PDF nije poslan" });
+        }
+
+        // ✅ Učitaj PDF iz temp mape (koju multer kreira)
+        const pdfBuffer = fs.readFileSync(req.file.path);
+        const pdfData = await pdfParse(pdfBuffer);
+
+        const pageCount = pdfData.numpages;
+        const pdfText = pdfData.text?.trim() || "";
+
+        // ✅ Kreiraj novi PDF dokument za bazu
+        const newPdf = new Pdf({
+            filename: req.file.filename,               // Generirano ime na serveru
+            originalName: req.body.name || req.file.originalname, // Ime korisnika ili originalno
+            data: pdfBuffer,                           // Binarni sadržaj PDF-a
+            text: pdfText,                             // Tekst iz PDF-a
+            contentType: req.file.mimetype,            // MIME tip (application/pdf)
+            totalPages: pageCount,
+            uploadedAt: new Date()                     // Datum uploada
+        });
+
+        // ✅ Spremi PDF u MongoDB
+        await newPdf.save();
+
+        // ✅ Obriši privremeni file iz uploads foldera
+        fs.unlink(req.file.path, (err) => {
+            if (err) console.error("Greška pri brisanju temp file-a:", err);
+        });
+
+        // ✅ Vrati podatke frontendu
+        console.log("Parsed PDF text:", pdfText); // ispravno logiranje
+        res.json({
+            message: "PDF je uspješno uploadan i spremljen u bazu!",
+            pdfId: newPdf._id,
+            pdfName: newPdf.originalName,
+            totalPages: pageCount
+        });
+
+    } catch (err) {
+        console.error("Greška pri uploadu PDF-a:", err);
+        res.status(500).json({ error: "Greška na serveru prilikom uploada PDF-a" });
+    }
+};
+
+// Dohvat PDF-a po ID-u
+exports.getPdfById = async (req, res) => {
+    try {
+        const pdfDoc = await Pdf.findById(req.params.id);
+        if (!pdfDoc) return res.status(404).send('PDF nije pronađen');
+
+        res.contentType(pdfDoc.contentType);
+        res.send(pdfDoc.data);
+    } catch (error) {
+        console.error("Greška prilikom dohvata PDF-a:", error);
+        res.status(500).send('Greška prilikom dohvata PDF-a');
+    }
+};
+
+
+
+
+
+
+
+
+
+
+/*const fs = require("fs");
 const axios = require("axios");
 const dotenv = require("dotenv");
 const pdfParse = require("pdf-parse");
@@ -70,4 +145,4 @@ ${clipped}
       details: err.response?.data || err.message
     });
   }
-};
+};*/
