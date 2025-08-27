@@ -1,27 +1,18 @@
 const mongoose = require("mongoose");
 
 const pdfSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   originalName: { type: String, required: true },
   filename: { type: String, required: true },
-  data: { type: Buffer, required: true }, // PDF sadržaj
+  data: { type: Buffer, required: true },
   contentType: { type: String, required: true },
   totalPages: { type: Number },
   text: String,
   createdAt: { type: Date, default: Date.now }
 });
 
+
 module.exports = mongoose.model("Pdf", pdfSchema);
-
-
-
-
-
-
-
-
-
-
-
 
 
 /*const mongoose = require('mongoose');

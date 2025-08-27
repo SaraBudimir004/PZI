@@ -7,6 +7,7 @@ import Upload from "../pages/UploadPdf.vue"
 import Dashboard from "../components/Dashboard.vue";
 import Flashcards from "../pages/Flashcards.vue";
 import Quiz from "../pages/Quiz.vue";
+import Admin from "../components/Admin.vue";
 
 const routes = [
     {
@@ -43,6 +44,11 @@ const routes = [
         path: '/quiz',
         name: 'Quiz',
         component: Quiz
+    },
+    {
+        path: '/admin-panel',
+        name: 'Admin',
+        component: Admin
     }
 
 ];
