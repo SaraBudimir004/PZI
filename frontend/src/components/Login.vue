@@ -19,36 +19,46 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 import { loginUser, loginAdmin } from '../services/auth.js';
-const error = ref("");
+import { useRouter } from 'vue-router';
 
-const username = ref('')
-const password = ref('')
+const router = useRouter();
+const username = ref('');
+const password = ref('');
+const error = ref('');
 
 const handleSubmit = async () => {
+  error.value = '';
+
   try {
-    // Prvo pokušaj admin login
+    let res;
+
+    // prvo pokušaj login kao admin
     try {
-      const res = await loginAdmin(username.value, password.value)
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('role', 'admin')
-      window.location.href = '/admin-panel' // ruta za admina
-      return
-    } catch (err) {
-      // Ako nije admin, pokušaj user login
-      const res = await loginUser(username.value, password.value)
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('role', 'user')
-      window.location.href = '/uploadpdf' // ruta za usera
-      return
+      res = await loginAdmin(username.value, password.value);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('role', 'admin');
+      localStorage.setItem('userId', res.data.user._id);
+      router.push('/admin-panel');
+      return;
+    } catch (adminErr) {
+      console.log("Admin login failed:", adminErr);
+      // ako nije admin, probaj login kao user
+      res = await loginUser(username.value, password.value);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('role', 'user');
+      localStorage.setItem('userId', res.data.user._id);
+      router.push('/uploadpdf');
+      return;
     }
+
   } catch (err) {
-    error.value = 'Neispravni podaci za prijavu'
+    console.error("Login failed:", err);
+    error.value = err.response?.data?.message || 'Neispravni podaci za prijavu';
   }
 }
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
@@ -74,7 +84,7 @@ const handleSubmit = async () => {
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8);
     z-index: 1;
   }
 }
@@ -91,7 +101,7 @@ const handleSubmit = async () => {
   width: 100%;
   align-items: center;
   padding: 40px 30px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   backdrop-filter: blur(10px);
 }
@@ -127,7 +137,7 @@ const handleSubmit = async () => {
   font-family: 'Poppins', sans-serif;
   font-size: 1rem;
   outline: none;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   transition: all 0.3s ease;
 }
@@ -137,7 +147,7 @@ const handleSubmit = async () => {
 }
 
 .register-form input:focus {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 0 10px #70FCFB;
 }
 

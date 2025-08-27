@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const Pdf = require("../models/pdf"); // Tvoj Mongoose model PDF-a
 const pdfParse = require("pdf-parse");
 
@@ -20,8 +21,10 @@ exports.uploadPdf = async (req, res) => {
         const newPdf = new Pdf({
             filename: req.file.filename,               // Generirano ime na serveru
             originalName: req.body.name || req.file.originalname, // Ime korisnika ili originalno
-            data: pdfBuffer,                           // Binarni sadržaj PDF-a
-            text: pdfText,                             // Tekst iz PDF-a
+            data: pdfBuffer,
+            user: req.body.userId,
+            text: pdfText,
+            filePath: req.file.path,
             contentType: req.file.mimetype,            // MIME tip (application/pdf)
             totalPages: pageCount,
             uploadedAt: new Date()                     // Datum uploada
@@ -30,10 +33,7 @@ exports.uploadPdf = async (req, res) => {
         // ✅ Spremi PDF u MongoDB
         await newPdf.save();
 
-        // ✅ Obriši privremeni file iz uploads foldera
-        fs.unlink(req.file.path, (err) => {
-            if (err) console.error("Greška pri brisanju temp file-a:", err);
-        });
+
 
         // ✅ Vrati podatke frontendu
         console.log("Parsed PDF text:", pdfText); // ispravno logiranje
@@ -50,20 +50,23 @@ exports.uploadPdf = async (req, res) => {
     }
 };
 
-// Dohvat PDF-a po ID-u
 exports.getPdfById = async (req, res) => {
     try {
-        const pdfDoc = await Pdf.findById(req.params.id);
-        if (!pdfDoc) return res.status(404).send('PDF nije pronađen');
+        const pdf = await Pdf.findById(req.params.id);
+        if (!pdf) return res.status(404).json({ message: "PDF nije pronađen" });
 
-        res.contentType(pdfDoc.contentType);
-        res.send(pdfDoc.data);
-    } catch (error) {
-        console.error("Greška prilikom dohvata PDF-a:", error);
-        res.status(500).send('Greška prilikom dohvata PDF-a');
+        const absolutePath = path.resolve(pdf.filePath);
+        if (!fs.existsSync(absolutePath)) {
+            return res.status(404).json({ message: "Fajl više ne postoji na serveru" });
+        }
+
+        res.contentType(pdf.contentType);
+        res.sendFile(absolutePath);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Greška prilikom učitavanja PDF-a", error: err.message });
     }
 };
-
 
 
 

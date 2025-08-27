@@ -78,6 +78,7 @@ const handleUpload = async () => {
     const formData = new FormData()
     formData.append("file", file.value)
     formData.append("name", pdfName.value)
+    formData.append("userId", localStorage.getItem("userId"));
 
     // Dohvati token (guest ili user)
     const token = localStorage.getItem("guestToken") || localStorage.getItem("userToken")
