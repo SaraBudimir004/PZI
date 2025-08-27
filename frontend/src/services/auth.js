@@ -4,6 +4,7 @@ const BASE_URL = "http://localhost:5000"; // prilagodi backend URL
 
 // USER AUTH
 export const registerUser = async (data) => {
+    console.log("Pozvana registerUser funkcija");
     try {
         const res = await axios.post(`${BASE_URL}/users/register`, data);
         return res.data;

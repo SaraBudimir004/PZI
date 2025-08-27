@@ -48,7 +48,7 @@ exports.deleteUser = async (req, res) => {
 //Dohvat svih PDF-ova
 exports.getAllPdfs = async (req, res) => {
     try {
-        const pdfs = await Pdf.find().populate('user', 'username email');
+        const pdfs = await Pdf.find().select('_id originalName filename contentType createdAt user').populate('user', 'username email');
         res.json(pdfs);
     } catch (err) {
         console.error(err);
