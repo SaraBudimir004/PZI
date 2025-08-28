@@ -9,7 +9,7 @@ exports.uploadPdf = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: "PDF nije poslan" });
         }
-
+        console.log(req.user, "req.user prije 1 kreiranja PDF-a")
         // ✅ Učitaj PDF iz temp mape (koju multer kreira)
         const pdfBuffer = fs.readFileSync(req.file.path);
         const pdfData = await pdfParse(pdfBuffer);
@@ -19,16 +19,18 @@ exports.uploadPdf = async (req, res) => {
 
         // ✅ Kreiraj novi PDF dokument za bazu
         const newPdf = new Pdf({
-            user: req.user.id,
             filename: req.file.filename,               // Generirano ime na serveru
             originalName: req.body.name || req.file.originalname, // Ime korisnika ili originalno
             data: pdfBuffer,
+            user: req.user.id,
             text: pdfText,
             filePath: req.file.path,
             contentType: req.file.mimetype,            // MIME tip (application/pdf)
             totalPages: pageCount,
             uploadedAt: new Date()                     // Datum uploada
         });
+
+        console.log(req.user, "req.user prije kreiranja PDF-a")
 
         // ✅ Spremi PDF u MongoDB
         await newPdf.save();

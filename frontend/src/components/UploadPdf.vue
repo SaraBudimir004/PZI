@@ -78,11 +78,11 @@ const handleUpload = async () => {
     const formData = new FormData()
     formData.append("file", file.value)
     formData.append("name", pdfName.value)
-    formData.append("userId", localStorage.getItem("userId"));
+    //formData.append("userId", localStorage.getItem("userId"));
 
     // Dohvati token (guest ili user)
-    const token = localStorage.getItem("guestToken") || localStorage.getItem("userToken")
-    if (!token) {
+    //const token = localStorage.getItem("guestToken") || localStorage.getItem("userToken")
+    if (!localStorage.getItem('token')) {
       message.value = "Niste prijavljeni!"
       loading.value = false
       return
@@ -92,7 +92,7 @@ const handleUpload = async () => {
     const res = await axios.post(
         "http://localhost:5000/pdf/upload",
         formData,
-        {headers: {"Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`}}
+        {headers: {"Content-Type": "multipart/form-data", Authorization: `Bearer ${localStorage.getItem('token')}`}}
     )
 
     // Pripremi podatke za dashboard
