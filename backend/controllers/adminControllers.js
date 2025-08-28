@@ -79,3 +79,24 @@ exports.getPdfsByUser = async (req, res) => {
         res.status(500).json({ message: 'Greška pri dohvaćanju PDF-ova korisnika.' });
     }
 };
+// Dohvat PDF-a po ID-u s tekstom (za admina)
+exports.getPdfContent = async (req, res) => {
+    const { pdfId } = req.params;
+    try {
+        const pdf = await Pdf.findById(pdfId).populate('user', 'username email');
+        if (!pdf) return res.status(404).json({ message: 'PDF nije pronađen.' });
+
+        res.json({
+            pdfId: pdf._id,
+            originalName: pdf.originalName,
+            filename: pdf.filename,
+            totalPages: pdf.totalPages,
+            uploadedAt: pdf.createdAt,
+            user: pdf.user,
+            text: pdf.text, // Ovdje je sadržaj PDF-a
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Greška pri dohvaćanju sadržaja PDF-a.' });
+    }
+};

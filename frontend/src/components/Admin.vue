@@ -41,6 +41,7 @@
             <tr>
               <th>Naziv</th>
               <th>Korisnik</th>
+              <th>Pregled</th>
               <th>Brisanje</th>
             </tr>
           </thead>
@@ -48,6 +49,9 @@
             <tr v-for="pdf in pdfs" :key="pdf._id">
               <td data-label="Naziv">{{ pdf.originalName || 'PDF' }}</td>
               <td data-label="Korisnik">{{ pdf.user?.username || 'Nepoznat korisnik' }}</td>
+              <td data-label="Pregled">
+                <button @click="viewPdf(pdf._id)" class="action-btn view-btn">Pregled PDF</button>
+              </td>
               <td data-label="Brisanje">
                 <button @click="deletePdf(pdf._id)" class="action-btn delete-btn">Obriši PDF</button>
               </td>
@@ -56,6 +60,23 @@
         </table>
         <div v-else class="no-pdfs">Nema učitanih PDF-ova za prikaz.</div>
       </section>
+
+      <!-- Modal za pregled PDF-a -->
+    <div v-if="showPdfModal" class="pdf-modal">
+      <div class="pdf-modal-content">
+        <div class="pdf-modal-header">
+          <div>
+            <h3>{{ currentPdf.originalName }}</h3>
+            <p><strong>Korisnik:</strong> {{ currentPdf.user?.username }}</p>
+          </div>
+          <button @click="closePdfModal" class="close-pdf-btn">X</button>
+        </div>
+        <div class="pdf-text">
+          <pre>{{ currentPdf.text }}</pre>
+        </div>
+  </div>
+</div>
+
     </div>
   </div>
 </template>
@@ -68,11 +89,16 @@ const users = ref([])
 const pdfs = ref([])
 const token = localStorage.getItem('token')
 
+// Modal state
+const showPdfModal = ref(false)
+const currentPdf = ref(null)
+
 onMounted(() => {
   getUsers()
   getAllPdfs()
 })
 
+// Dohvat svih korisnika
 const getUsers = async () => {
   try {
     const res = await axios.get('http://localhost:5000/admin/users', {
@@ -84,6 +110,7 @@ const getUsers = async () => {
   }
 }
 
+// Dohvat svih PDF-ova
 const getAllPdfs = async () => {
   try {
     const res = await axios.get('http://localhost:5000/admin/pdfs', {
@@ -96,6 +123,7 @@ const getAllPdfs = async () => {
   }
 }
 
+// Dohvat PDF-ova po korisniku
 const getPdfsByUser = async (userId) => {
   try {
     const res = await axios.get(`http://localhost:5000/admin/pdfs/user/${userId}`, {
@@ -108,6 +136,7 @@ const getPdfsByUser = async (userId) => {
   }
 }
 
+// Brisanje korisnika
 const deleteUser = async (userId) => {
   if (!confirm('Jeste li sigurni da želite obrisati korisnika?')) return
   try {
@@ -121,6 +150,7 @@ const deleteUser = async (userId) => {
   }
 }
 
+// Brisanje PDF-a
 const deletePdf = async (pdfId) => {
   if (!confirm('Jeste li sigurni da želite obrisati PDF?')) return
   try {
@@ -133,6 +163,26 @@ const deletePdf = async (pdfId) => {
   }
 }
 
+// Pregled PDF-a u modal
+const viewPdf = async (pdfId) => {
+  try {
+    const res = await axios.get(`http://localhost:5000/admin/pdf/${pdfId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    currentPdf.value = res.data
+    showPdfModal.value = true
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+// Zatvori modal
+const closePdfModal = () => {
+  showPdfModal.value = false
+  currentPdf.value = null
+}
+
+// Odjava
 const logout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('role')
@@ -284,6 +334,58 @@ const logout = () => {
   color: #B0E0FF;
   font-weight: 600;
   padding: 1rem 0;
+}
+
+/* Modal za PDF */
+.pdf-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.pdf-modal-content {
+  background: #5b5b5b;
+  color: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.pdf-text pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  margin-top: 15px;
+}
+.pdf-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-pdf-btn {
+  background: rgba(255, 0, 0, 0.7);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.close-pdf-btn:hover {
+  background: rgba(255, 0, 0, 0.9);
 }
 
 /* Responzivno */
