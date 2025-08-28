@@ -3,11 +3,13 @@
     <div class="register-content">
       <h2 class="register-title">Prijava</h2>
       <p class="register-subtitle">Prijavite se u svoj račun i počnite učiti uz AI pomoćnika</p>
+
       <form @submit.prevent="handleSubmit" class="register-form">
         <input type="text" v-model="username" placeholder="Username" required />
         <input type="password" v-model="password" placeholder="Password" required />
         <button type="submit" class="register-btn">Prijavite se</button>
       </form>
+
       <p v-if="error" style="color:red;">{{ error }}</p>
 
       <p class="login-link">
@@ -34,34 +36,41 @@ const handleSubmit = async () => {
   try {
     // pokušaj login kao admin
     const res = await loginAdmin(username.value, password.value);
-    
-    // spremi token i role
+
+    // Spremi token, role i user objekt
     localStorage.setItem('token', res.data.token);
     localStorage.setItem('role', 'admin');
-  
+    localStorage.setItem('user', JSON.stringify({
+      name: res.data.user.username || username.value,
+      avatar: res.data.user.avatar || ''
+    }));
 
-    // redirect na admin panel
     router.push('/admin-panel');
-    
+
   } catch (adminErr) {
     console.log("Admin login failed:", adminErr);
 
     try {
-      // ako nije admin, probaj login kao običan korisnik
+      // login običnog korisnika
       const resUser = await loginUser(username.value, password.value);
 
       localStorage.setItem('token', resUser.data.token);
       localStorage.setItem('role', 'user');
+      localStorage.setItem('user', JSON.stringify({
+        name: resUser.data.user.username || username.value,
+        avatar: resUser.data.user.avatar || ''
+      }));
+
       router.push('/uploadpdf');
-      
+
     } catch (userErr) {
       console.error("User login failed:", userErr);
       error.value = userErr.response?.data?.message || 'Neispravni podaci za prijavu';
     }
   }
-}
-
+};
 </script>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
@@ -82,14 +91,14 @@ const handleSubmit = async () => {
   text-align: center;
   background-color: #0D0D0D;
   color: #fff;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 1;
-  }
+.register-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1;
 }
 
 /* Centrirani sadržaj */

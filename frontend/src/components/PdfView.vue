@@ -24,11 +24,15 @@
             text-layer
             image-resources-path="https://unpkg.com/pdfjs-dist/web/images/"
         />
+        <div v-else-if="textContent" class="pa-4" style="overflow-y:auto;">
+          <pre>{{ textContent }}</pre>
+        </div>
         <div v-else class="text-center pa-10">
           <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          <p>Učitavanje PDF-a...</p>
+          <p>Učitavanje...</p>
         </div>
       </v-card-text>
+
     </v-card>
   </v-dialog>
 </template>
@@ -45,6 +49,7 @@ export default {
     pdfSource: {type: [String, Object], required: true},
     title: {type: String, default: "Pregled PDF-a"},
     show: {type: Boolean, default: false},
+    textContent: { type: String, default: "" },
   },
   emits: ["update:show"],
   data() {

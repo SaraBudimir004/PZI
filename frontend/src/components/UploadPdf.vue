@@ -47,6 +47,11 @@
 
         <!-- Poruka o statusu upload-a -->
         <div v-if="message" class="upload-message">{{ message }}</div>
+
+        <!-- Dugme za dashboard: ISTO STILIZIRANO KAO UČITAJ MATERIJALE -->
+        <v-btn class="upload-btn" rounded block @click="goToDashboard">
+          Idi na svoje materijale
+        </v-btn>
       </v-col>
     </v-row>
   </v-container>
@@ -78,21 +83,18 @@ const handleUpload = async () => {
     const formData = new FormData()
     formData.append("file", file.value)
     formData.append("name", pdfName.value)
-    //formData.append("userId", localStorage.getItem("userId"));
 
-    // Dohvati token (guest ili user)
-    //const token = localStorage.getItem("guestToken") || localStorage.getItem("userToken")
-    if (!localStorage.getItem('token')) {
+    const token = localStorage.getItem('token')
+    if (!token) {
       message.value = "Niste prijavljeni!"
       loading.value = false
       return
     }
 
-    // Upload na backend
     const res = await axios.post(
         "http://localhost:5000/pdf/upload",
         formData,
-        {headers: {"Content-Type": "multipart/form-data", Authorization: `Bearer ${localStorage.getItem('token')}`}}
+        {headers: {"Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`}}
     )
 
     // Pripremi podatke za dashboard
@@ -122,6 +124,11 @@ const handleUpload = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Funkcija za dugme "Idi na svoje materijale"
+const goToDashboard = () => {
+  router.push('/dashboard')
 }
 </script>
 
@@ -179,7 +186,7 @@ const handleUpload = async () => {
   margin: 0;
 }
 
-/* Dugme za upload */
+/* Dugme za upload i dashboard (ISTI STIL) */
 .upload-btn {
   background: linear-gradient(135deg, #70FCFB, #42CFEA);
   color: #0D0D0D;

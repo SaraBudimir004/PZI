@@ -1,137 +1,153 @@
 <template>
   <v-app>
-    <!-- Sidebar navigacija -->
-    <v-navigation-drawer width="220" class="side-nav">
-      <v-list dense>
-        <!-- Logo / naziv aplikacije -->
-        <v-list-item class="logo">
-          <span class="text-h6 font-weight-bold">Skripte</span>
-        </v-list-item>
-        <!-- Ostale stavke navigacije mogu ići ovdje -->
-      </v-list>
-    </v-navigation-drawer>
+    <Sidebar
+        :userPdfs="userPdfs"
+        @pdf-select="selectPdf"
+        @upload-click="openUploadModal"
+        @pdf-deleted="handlePdfDeleted"
+    />
 
-    <!-- Glavni sadržaj -->
     <v-main>
       <v-container>
-        <!-- Header sa pretragom i korisničkim kontrolama -->
-        <v-row class="align-center">
-          <!-- Polje za pretragu -->
-          <v-col cols="6" class="d-flex align-center">
-            <v-text-field
-                hide-details
-                rounded
-                filled
-                placeholder="Search"
-                prepend-inner-icon="mdi-magnify"
-                class="search"
-            />
-          </v-col>
+        <UserHeader />
 
-          <v-col cols="6" class="d-flex justify-end align-center">
-
-            <!-- Avatar i ime korisnika -->
-            <v-avatar>
-              <img src="https://randomuser.me/api/portraits/women/71.jpg" alt="Korisnik" />
-            </v-avatar>
-            <span class="ml-2 font-weight-bold">korisnik</span>
+        <!-- PDF kartica -->
+        <v-row class="mb-6">
+          <v-col cols="12" md="6">
+            <v-card v-if="uploadedPdf.name" class="pa-12 account-card">
+              <div class="text-h4 font-weight-bold green--text mb-2">{{ uploadedPdf.name }}</div>
+              <div class="grey--text text-caption">Dodano: {{ uploadedPdf.date || '-' }}</div>
+              <div class="grey--text text-caption font-mono">Stranice: {{ uploadedPdf.totalPages || 0 }}</div>
+            </v-card>
           </v-col>
         </v-row>
 
-        <!-- Kartica sa informacijama o PDF-u -->
-        <v-col cols="12">
-          <v-card v-if="uploadedPdf.name" class="pa-5 account-card">
-            <div class="text-h4 font-weight-bold green--text mb-4"> {{ uploadedPdf.name }} </div>
-            <div class="grey--text text-caption">Dodano: {{ uploadedPdf.date || '-' }} </div>
-            <div class="grey--text text-caption font-mono">Stranice: {{ uploadedPdf.totalPages || 0 }}</div>
-          </v-card>
-        </v-col>
+        <!-- Dashboard kartice -->
+        <DashboardCards
+            :uploadedPdf="uploadedPdf"
+            @open-flashcards="generateAndGoToFlashcards"
+            @open-quiz="generateAndGoToQuiz"
+            @open-summary="generateAndShowSummary"
+            @open-pdf-viewer="openPdfViewer"
+        />
 
-        <!-- Kartice sa akcijama -->
-        <v-container class="custom-container" fluid>
-          <v-row>
-            <!-- Flashcards kartica -->
-            <v-col cols="12" md="6" class="mb-4">
-              <v-card class="pa-10" elevation="3"
-                      style="background: white; border-radius: 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.1); cursor:pointer;">
-                <div class="text-h5 font-weight-bold text-center" style="color: #133634;">Flashcards</div>
-              </v-card>
-            </v-col>
+        <!-- PdfView dijalog -->
+        <PdfView
+            v-model:show="showPdf"
+            :pdfSource="pdfUrl"
+            :title="uploadedPdf.name || 'Pregled PDF-a'"
+        />
 
-            <!-- Kviz kartica -->
-            <v-col cols="12" md="6" class="mb-4">
-              <v-card class="pa-10" elevation="3"
-                      style="background: white; border-radius: 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.1); cursor:pointer;">
-                <div class="text-h5 font-weight-bold text-center" style="color: #133634;">Kviz</div>
-              </v-card>
-            </v-col>
-          </v-row>
+        <PdfView
+            v-model:show="showSummary"
+            :textContent="summaryText"
+            :title="uploadedPdf.name || 'Sažetak PDF-a'"
+        />
 
-          <v-row>
-            <!-- Sažetak PDF-a kartica -->
-            <v-col cols="12" md="6" class="mb-4">
-              <v-card class="pa-10" elevation="3"
-                      style="background: white; border-radius: 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.1); cursor:pointer;">
-                <div class="text-h5 font-weight-bold text-center" style="color: #133634;">Sažetak Pdf-a</div>
-              </v-card>
-            </v-col>
-
-            <!-- Pregled PDF-a kartica (otvara modal) -->
-            <v-col cols="12" md="6" class="mb-4">
-              <v-card class="pa-10" elevation="3"
-                      style="background: white; border-radius: 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.1); cursor:pointer;"
-                      @click="openPdfViewer(uploadedPdf.id)">
-                <div class="text-h5 font-weight-bold text-center" style="color: #133634;">Pregledaj Pdf</div>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
       </v-container>
     </v-main>
-
-    <!-- Modal za prikaz PDF-a -->
-    <PdfView
-        v-model:show="showPdf"
-        :pdfSource="pdfUrl"
-        :title="uploadedPdf.name || 'Pregled PDF-a'"
-    />
   </v-app>
 </template>
 
 <script>
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import PdfView from "./PdfView.vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
+import Sidebar from "./Sidebar.vue";
+import DashboardCards from "./DashboardCards.vue";
+import UserHeader from "./UserHeader.vue";
+import PdfView from "./PdfView.vue";
 
 export default {
   name: "Dashboard",
-  components: { PdfView },
-
+  components: { Sidebar, DashboardCards, UserHeader, PdfView },
   setup() {
-    const route = useRoute();
-
-    // PDF informacije
-    const uploadedPdf = ref({
-      id: "",
-      name: "",
-      totalPages: 0,
-      date: ""
-    });
-
-    // Modal prikaza PDF-a
+    const router = useRouter();
+    const userPdfs = ref([]);
+    const uploadedPdf = ref({ id: "", name: "", totalPages: 0, date: "" });
+    const pdfUrl = ref(null);
     const showPdf = ref(false);
-    const pdfUrl = ref("");
 
-    // Popuni podatke o PDF-u sa query parametara (ili kasnije s API-ja)
-    onMounted(() => {
-      uploadedPdf.value = {
-        id: route.query.id || "",
-        name: route.query.name || "",
-        totalPages: route.query.pages || 0,
-        date: route.query.date || ""
-      };
-    });
+    const summaryText = ref("");
+    const showSummary = ref(false);
+
+    const fetchUserPdfs = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await axios.get("http://localhost:5000/pdf/user", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        userPdfs.value = res.data;
+        if (userPdfs.value.length) uploadedPdf.value = userPdfs.value[0];
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const selectPdf = (pdf) => {
+      uploadedPdf.value = pdf;
+    };
+
+    const handlePdfDeleted = (deletedPdfId) => {
+      userPdfs.value = userPdfs.value.filter(pdf => pdf.id !== deletedPdfId);
+      if (uploadedPdf.value.id === deletedPdfId)
+        uploadedPdf.value = { id: "", name: "", totalPages: 0, date: "" };
+    };
+
+    const generateAndGoToFlashcards = async (pdfId) => {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Molimo prijavite se");
+
+      try {
+        const res = await axios.get(`http://localhost:5000/ai/flashcards/${pdfId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log("Flashcards generirane:", res.data);
+        router.push({ name: "Flashcards", query: { pdfId } });
+      } catch (error) {
+        console.error(error);
+        alert("Greška pri generiranju flashcards");
+      }
+    };
+
+    const generateAndGoToQuiz = async (pdfId) => {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Molimo prijavite se");
+
+      try {
+        const res = await axios.get(`http://localhost:5000/ai/quiz/${pdfId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log("Kviz generiran:", res.data);
+        router.push({ name: "Quiz", query: { pdfId } });
+      } catch (error) {
+        console.error(error);
+        alert("Greška pri generiranju kviza");
+      }
+    };
+
+    const textContent = ref("");
+
+    const generateAndShowSummary = async (pdfId) => {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Molimo prijavite se");
+
+      try {
+        const res = await axios.get(`http://localhost:5000/ai/summary/${pdfId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        textContent.value = res.data.summary;
+        summaryText.value = res.data.summary;
+        showSummary.value = true;
+      } catch (error) {
+        console.error(error);
+        alert("Greška pri generiranju sažetka");
+      }
+    };
+
+
 
     // Funkcija za otvaranje PDF modal-a
     async function openPdfViewer(pdfId) {
@@ -153,32 +169,34 @@ export default {
       }
     }
 
+
+
+
+    onMounted(fetchUserPdfs);
+
     return {
+      userPdfs,
       uploadedPdf,
-      showPdf,
+      selectPdf,
+      handlePdfDeleted,
+      generateAndGoToFlashcards,
+      generateAndGoToQuiz,
+      generateAndShowSummary,
+      openPdfViewer,
       pdfUrl,
-      openPdfViewer
+      showPdf,
+      summaryText,
+      showSummary
     };
   }
 };
 </script>
 
 <style scoped>
-/* Sidebar stil */
-.side-nav {
-  background: #efffff;
-  border-radius: 20px 0 0 20px;
-}
-
-/* Logo */
-.logo {
-  margin-bottom: 28px;
-}
-
-/* Kartica sa informacijama o PDF-u */
 .account-card {
   background: linear-gradient(135deg, #0d0d0d 35%, #42cfea 100%);
   color: #fff;
   border-radius: 20px;
+  cursor: default;
 }
 </style>
