@@ -23,7 +23,6 @@ exports.uploadPdf = async (req, res) => {
             filename: req.file.filename,               // Generirano ime na serveru
             originalName: req.body.name || req.file.originalname, // Ime korisnika ili originalno
             data: pdfBuffer,
-            user: req.body.userId,
             text: pdfText,
             filePath: req.file.path,
             contentType: req.file.mimetype,            // MIME tip (application/pdf)

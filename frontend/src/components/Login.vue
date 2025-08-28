@@ -32,32 +32,35 @@ const handleSubmit = async () => {
   error.value = '';
 
   try {
-    let res;
+    // pokušaj login kao admin
+    const res = await loginAdmin(username.value, password.value);
+    
+    // spremi token i role
+    localStorage.setItem('token', res.data.token);
+    localStorage.setItem('role', 'admin');
+  
 
-    // prvo pokušaj login kao admin
+    // redirect na admin panel
+    router.push('/admin-panel');
+    
+  } catch (adminErr) {
+    console.log("Admin login failed:", adminErr);
+
     try {
-      res = await loginAdmin(username.value, password.value);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('role', 'admin');
-      localStorage.setItem('userId', res.data.user._id);
-      router.push('/admin-panel');
-      return;
-    } catch (adminErr) {
-      console.log("Admin login failed:", adminErr);
-      // ako nije admin, probaj login kao user
-      res = await loginUser(username.value, password.value);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('role', 'user');
-      localStorage.setItem('userId', res.data.user._id);
-      router.push('/uploadpdf');
-      return;
-    }
+      // ako nije admin, probaj login kao običan korisnik
+      const resUser = await loginUser(username.value, password.value);
 
-  } catch (err) {
-    console.error("Login failed:", err);
-    error.value = err.response?.data?.message || 'Neispravni podaci za prijavu';
+      localStorage.setItem('token', resUser.data.token);
+      localStorage.setItem('role', 'user');
+      router.push('/uploadpdf');
+      
+    } catch (userErr) {
+      console.error("User login failed:", userErr);
+      error.value = userErr.response?.data?.message || 'Neispravni podaci za prijavu';
+    }
   }
 }
+
 </script>
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
