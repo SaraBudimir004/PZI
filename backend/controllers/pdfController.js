@@ -19,10 +19,10 @@ exports.uploadPdf = async (req, res) => {
 
         // ✅ Kreiraj novi PDF dokument za bazu
         const newPdf = new Pdf({
-            user: req.user.id,
             filename: req.file.filename,               // Generirano ime na serveru
             originalName: req.body.name || req.file.originalname, // Ime korisnika ili originalno
             data: pdfBuffer,
+            user: req.body.userId,
             text: pdfText,
             filePath: req.file.path,
             contentType: req.file.mimetype,            // MIME tip (application/pdf)
