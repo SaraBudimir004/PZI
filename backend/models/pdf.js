@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 
 const pdfSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  
   originalName: { type: String, required: true },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+  guest: { type: String, required: false }, // tokenId gosta
+
   filename: { type: String, required: true },
 
   filePath: { type: String, required: true },

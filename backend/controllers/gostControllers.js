@@ -1,34 +1,47 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const Guest = require("../models/gost");
+const { v4: uuidv4 } = require("uuid");
 
-// U memoriji pratimo koliko je PDF-ova gost uploadovao (po tokenu)
-const guestUploads = {}; 
+// Gost login
+const guestLogin = async (req, res) => {
+    try {
+        const tokenId = uuidv4();
 
-// Gost se prijavljuje bez lozinke 
-exports.guestLogin = (req, res) => {
-    const token = jwt.sign(
-        { role: 'guest' },
-        process.env.JWT_SECRET,
-        { expiresIn: '3d' }
-    );
+        const guest = new Guest({ tokenId });
+        console.log("Priprema gosta:", guest);
+        await guest.save();
+        console.log("Gost spremljen u bazu:", guest);
 
-    res.json({ token, message: 'Gost je prijavljen.' });
+        const token = jwt.sign(
+            { role: "guest", tokenId }, 
+            process.env.JWT_SECRET,
+            { expiresIn: "3d" }
+        );
+
+        res.json({ token, message: "Gost je prijavljen." });
+    } catch (err) {
+        console.error("Greška pri loginu gosta:", err);
+        res.status(500).json({ message: "Greška pri loginu gosta", error: err.message });
+    }
 };
 
-// Middleware koji ograničava gosta na max 2 PDF-a
-exports.guestLimit = (req, res, next) => {
-    if (req.user.role !== 'guest') return next(); // ograničenje samo za goste
+// Middleware za limitiranje PDF-ova
+const guestLimit = async (req, res, next) => {
+    if (req.user.role !== "guest") return next();
 
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({ message: "Nedostaje token." });
+    try {
+        const guest = await Guest.findOne({ tokenId: req.user.tokenId });
+
+        if (!guest) return res.status(401).json({ message: "Nevažeći gost token." });
+        if (guest.uploads >= 2) return res.status(403).json({ message: "Gost je iskoristio svoj limit." });
+
+        guest.uploads += 1;
+        await guest.save();
+
+        next();
+    } catch (err) {
+        res.status(500).json({ message: "Greška pri provjeri gosta", error: err.message });
     }
-
-    guestUploads[token] = guestUploads[token] || 0;
-
-    if (guestUploads[token] >= 2) {
-        return res.status(403).json({ message: "Gost može uploadati maksimalno 2 PDF-a." });
-    }
-
-    guestUploads[token] += 1;
-    next();
 };
+
+module.exports = { guestLogin, guestLimit };

@@ -3,7 +3,7 @@ const User = require('../models/user');
 
 // Middleware za provjeru prijave
 const protect = async (req, res, next) => {
-    console.log("Auth header primljen:", req.headers.authorization); // << ovo
+    console.log("Auth header primljen:", req.headers.authorization); 
     let token;
 
     try {
@@ -13,9 +13,10 @@ const protect = async (req, res, next) => {
 
             // Ako je gost
             if (decoded.role === "guest") {
-                req.user = { role: "guest", id: null };
+                req.user = { role: "guest", tokenId: decoded.tokenId }; 
                 return next();
             }
+
 
             const user = await User.findById(decoded.id).select("-password");
             if (!user) {
