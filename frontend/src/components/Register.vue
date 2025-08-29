@@ -1,7 +1,7 @@
 <template>
   <section class="register-container">
     <div class="register-content">
-      <h2 class="register-title">Registracija</h2>
+      <h2 class="register-title">REGISTRACIJA</h2>
       <p class="register-subtitle">Napravite svoj račun i počnite učiti uz AI pomoćnika</p>
       <form @submit.prevent="handleSubmit" class="register-form">
         <input type="text" v-model="username" placeholder="Username" required />
@@ -54,31 +54,32 @@ const handleSubmit = async () => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-/* Container */
 .register-container {
   position: relative;
   width: 100%;
-  height: 100vh;         /* uvijek visina ekrana */
-  overflow: hidden;       /* sprječava scroll unutar hero */
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0;             /* ukloni fiksni padding koji stvara scroll */
-  box-sizing: border-box; /* padding i border se računaju unutar height */
+  padding: 0;
+  box-sizing: border-box;
   background-image: url('../assets/Grid.png');
   background-position: center;
   background-repeat: no-repeat;
+  background-size: cover;       
+  background-attachment: fixed;  
   text-align: center;
   background-color: #0D0D0D;
   color: #fff;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 1;
-  }
+.register-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8); 
+  z-index: 1;
 }
 
 /* Centrirani sadržaj */
@@ -88,14 +89,14 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 40%;
-  max-height: 40%;
-  width: 100%;
-  align-items: center;
+  width: 90%;
+  max-width: 600px;
   padding: 40px 30px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(0, 0, 0, 0.7); 
   border-radius: 16px;
   backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  text-align: center;
 }
 
 /* Naslov i podnaslov */
@@ -129,7 +130,7 @@ const handleSubmit = async () => {
   font-family: 'Poppins', sans-serif;
   font-size: 1rem;
   outline: none;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   transition: all 0.3s ease;
 }
@@ -139,7 +140,7 @@ const handleSubmit = async () => {
 }
 
 .register-form input:focus {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 0 10px #70FCFB;
 }
 
@@ -163,7 +164,7 @@ const handleSubmit = async () => {
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
 
-/* Login link */
+/* Link za login */
 .login-link {
   font-family: 'Poppins', sans-serif;
   font-size: 0.9rem;
@@ -177,17 +178,25 @@ const handleSubmit = async () => {
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .register-content {
-    padding: 30px 20px;
+    max-width: 450px;
+    padding: 35px 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-content {
+    max-width: 90%;
+    padding: 25px 15px;
   }
 
   .register-title {
-    font-size: clamp(1.8rem, 8vw, 2.5rem);
+    font-size: clamp(1.5rem, 8vw, 2.2rem);
   }
 
   .register-subtitle {
-    font-size: clamp(0.9rem, 5vw, 1.2rem);
+    font-size: clamp(0.8rem, 5vw, 1.2rem);
   }
 
   .register-btn {

@@ -13,8 +13,7 @@
           @click="card.onClick && card.onClick()"
       >
         <div
-            class="text-h5 font-weight-bold text-center"
-            style="color:#133634;"
+            class="text-h5 font-weight-bold text-center card-title"
         >
           {{ card.title }}
         </div>
@@ -61,8 +60,27 @@ export default {
 
 <style scoped>
 .action-card {
-  background: white;
+  background: #ffffff;
   border-radius: 20px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.action-card:hover {
+  background:  #42CFEA;
+  color: #0D0D0D;
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+}
+
+.card-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  color: #133634;
+  transition: color 0.3s ease;
+}
+
+.action-card:hover .card-title {
+  color: #0D0D0D;
 }
 </style>

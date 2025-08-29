@@ -81,89 +81,79 @@ const nextQuestion = () => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-.quiz-container {
-  min-height: calc(100vh - 80px);
-  background-color: #f5f5f5;
+.flashcard-container {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #0d0d0d;
+  padding: 20px;
 }
 
-.quiz-col {
+.flashcard-card {
+  width: 100%;
+  max-width: 700px;
+  padding: 40px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.quiz-card {
-  width: 100%;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  gap: 30px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
 }
 
 .question {
   font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  color: #fff;
   text-align: center;
-  margin-bottom: 20px;
 }
 
-/* Opcije */
-.option-btn {
-  width: 100%;
-  margin: 10px 0;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  color: #0D0D0D;
-  background: #ffffff;
-  text-transform: none;
-  transition: all 0.3s ease;
-}
-
-.option-btn:hover {
-  background: #e0f7fa;
-}
-
-/* Gumb Idi dalje */
-.next-btn {
-  background: linear-gradient(135deg, #70FCFB, #42CFEA);
-  color: #0D0D0D;
+.btn {
+  flex: 1;
+  min-width: 120px;
+  background: #333 !important;
+  color: #fff !important;
+  border-radius: 12px;
   font-weight: 600;
-  font-family: 'Poppins', sans-serif;
-  text-transform: none;
-  padding: clamp(12px, 2vw, 20px) clamp(24px, 5vw, 60px);
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(112, 252, 251, 0.5);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  margin: 10px 0;
+  padding: 15px 0;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.next-btn:hover {
-  transform: translateY(-3px) scale(1.05);
-  background: linear-gradient(135deg, #42CFEA, #70FCFB);
-  box-shadow: 0 12px 30px rgba(112, 252, 251, 0.7);
+.btn:hover {
+  background: #444 !important;
+  transform: translateY(-2px);
 }
 
-/* Responzivno */
-@media (max-width: 600px) {
-  .quiz-card {
-    padding: 15px;
+.correct {
+  background: #2e7d32 !important; /* diskretna zelena */
+}
+
+.wrong {
+  background: #c62828 !important; /* diskretna crvena */
+}
+
+.next {
+  background: #1565c0 !important; /* diskretna plava */
+}
+
+@media (max-width: 768px) {
+  .flashcard-card {
+    padding: 30px;
   }
-
   .question {
-    font-size: clamp(1.2rem, 4vw, 1.5rem);
+    font-size: clamp(1.5rem, 5vw, 2rem);
   }
-
-  .option-btn {
-    font-size: 0.95rem;
-  }
-
-  .next-btn {
-    font-size: 0.9rem;
-    padding: 10px 20px;
+  .btn {
+    font-size: 1rem;
+    min-width: 100px;
+    padding: 12px 0;
   }
 }
 </style>

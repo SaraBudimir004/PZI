@@ -8,12 +8,9 @@
       <v-card-title class="headline grey lighten-2">
         {{ title }}
         <v-spacer></v-spacer>
+        <!-- Zatvori gumb desno -->
+        <v-btn small color="#FF5733" dark @click="close">Zatvori</v-btn>
       </v-card-title>
-
-      <!-- Close button u gornjem desnom kutu -->
-      <v-btn icon @click="close" class="close-btn">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
 
       <v-card-text style="height: 80vh;" class="pdf-container">
         <VuePdfEmbed
@@ -28,11 +25,10 @@
           <pre>{{ textContent }}</pre>
         </div>
         <div v-else class="text-center pa-10">
-          <v-progress-circular indeterminate color="primary"></v-progress-circular>
           <p>Učitavanje...</p>
+          <v-btn color="#FF5733" dark @click="close">Zatvori</v-btn>
         </div>
       </v-card-text>
-
     </v-card>
   </v-dialog>
 </template>
@@ -56,17 +52,11 @@ export default {
     return {dialog: this.show};
   },
   watch: {
-    show(val) {
-      this.dialog = val;
-    },
-    dialog(val) {
-      this.$emit("update:show", val);
-    },
+    show(val) { this.dialog = val; },
+    dialog(val) { this.$emit("update:show", val); },
   },
   methods: {
-    close() {
-      this.dialog = false;
-    },
+    close() { this.dialog = false; },
   },
 };
 </script>
@@ -74,7 +64,6 @@ export default {
 <style scoped>
 .pdf-container .canvasWrapper {
   margin: 16px 0;
-  background-color: #f5f5f5;
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -83,10 +72,13 @@ export default {
   padding: 8px;
 }
 
-.close-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 100;
+.v-card-title {
+  display: flex;
+  align-items: center;
+}
+
+.v-btn {
+  text-transform: none;
+  font-weight: 600;
 }
 </style>

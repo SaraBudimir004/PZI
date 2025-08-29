@@ -3,7 +3,7 @@
     <v-row align="center" justify="center" class="fill-height">
       <v-col cols="12" md="6" class="upload-content">
         <!-- Naslov i podnaslov -->
-        <h2 class="upload-title">Učitaj Skriptu</h2>
+        <h2 class="upload-title">UČITAJ SKRIPTU</h2>
         <p class="upload-subtitle">
           Odaberite PDF datoteku kako biste dodali svoj materijal za učenje
         </p>
@@ -128,23 +128,31 @@ const goToDashboard = () => {
 <style scoped>
 /* Glavni container za upload */
 .upload-container {
-  position: relative;
-  min-height: 100vh;
+   position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
-  align-items: center;
   justify-content: center;
-  text-align: center;
-  background-color: #0D0D0D;
+  align-items: center;
+  padding: 0;
+  box-sizing: border-box;
   background-image: url('../assets/Grid.png');
   background-position: center;
   background-repeat: no-repeat;
+  background-size: cover;       
+  background-attachment: fixed;  
+  text-align: center;
+  background-color: #0D0D0D;
+  color: #fff;
 }
+
 
 .upload-container::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0,0,0,0.8);
   z-index: 1;
 }
 
@@ -156,10 +164,14 @@ const goToDashboard = () => {
   flex-direction: column;
   gap: 20px;
   align-items: center;
+  width: 90%;          
+  max-width: 600px;   
   padding: 40px 30px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0,0,0,0.7); 
   border-radius: 16px;
   backdrop-filter: blur(12px);
+  box-sizing: border-box;
+  text-align: center;
 }
 
 /* Naslov i podnaslov */
@@ -179,26 +191,26 @@ const goToDashboard = () => {
   margin: 0;
 }
 
-/* Dugme za upload i dashboard (ISTI STIL) */
+/* Dugme za upload i dashboard (isti stil kao registracija/prijava) */
 .upload-btn {
   background: linear-gradient(135deg, #70FCFB, #42CFEA);
   color: #0D0D0D;
   font-weight: 600;
   font-family: 'Poppins', sans-serif;
   text-transform: none;
-  min-width: 400px;
+  width: 100%;
   max-width: 500px;
-  padding: 16px 32px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(112, 252, 251, 0.5);
-  backdrop-filter: blur(10px);
-  font-size: 1.2rem;
+  padding: 14px 0;
+  border-radius: 16px;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .upload-btn:hover {
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 12px 30px rgba(112, 252, 251, 0.7);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(112, 252, 251, 0.6);
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
 
@@ -208,4 +220,46 @@ const goToDashboard = () => {
   color: #70FCFB;
   font-weight: 600;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .upload-content {
+    max-width: 450px;
+    padding: 35px 25px;
+  }
+
+  .upload-title {
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
+  }
+
+  .upload-subtitle {
+    font-size: clamp(0.9rem, 4vw, 1.3rem);
+  }
+
+  .upload-btn {
+    font-size: 0.95rem;
+    padding: 12px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-content {
+    width: 90%;
+    padding: 25px 15px;
+  }
+
+  .upload-title {
+    font-size: clamp(1.5rem, 8vw, 2.2rem);
+  }
+
+  .upload-subtitle {
+    font-size: clamp(0.8rem, 5vw, 1.1rem);
+  }
+
+  .upload-btn {
+    font-size: 0.9rem;
+    padding: 10px 0;
+  }
+}
+
 </style>

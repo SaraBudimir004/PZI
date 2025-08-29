@@ -1,7 +1,7 @@
 <template>
   <section class="register-container">
     <div class="register-content">
-      <h2 class="register-title">Prijava</h2>
+      <h2 class="register-title">PRIJAVA</h2>
       <p class="register-subtitle">Prijavite se u svoj račun i počnite učiti uz AI pomoćnika</p>
 
       <form @submit.prevent="handleSubmit" class="register-form">
@@ -74,21 +74,19 @@ const handleSubmit = async () => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-/* Container */
+/* Container - pozadina cijelog ekrana */
 .register-container {
   position: relative;
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0;
-  box-sizing: border-box;
+  padding: 0 10px; /* malo paddinga sa strane */
   background-image: url('../assets/Grid.png');
   background-position: center;
   background-repeat: no-repeat;
-  text-align: center;
+  background-size: cover;
   background-color: #0D0D0D;
   color: #fff;
 }
@@ -108,14 +106,14 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 40%;
-  max-height: 40%;
-  width: 100%;
-  align-items: center;
+  width: 90%;
+  max-width: 600px; 
   padding: 40px 30px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.7); 
   border-radius: 16px;
   backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  text-align: center;
 }
 
 /* Naslov i podnaslov */
@@ -124,6 +122,7 @@ const handleSubmit = async () => {
   font-weight: 700;
   font-size: clamp(2rem, 6vw, 3rem);
   margin: 0;
+  color: #fff;
 }
 
 .register-subtitle {
@@ -175,6 +174,7 @@ const handleSubmit = async () => {
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 100%; 
 }
 
 .register-btn:hover {
@@ -197,10 +197,11 @@ const handleSubmit = async () => {
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .register-content {
+    max-width: 400px;
     padding: 30px 20px;
-  }
+  } 
 
   .register-title {
     font-size: clamp(1.8rem, 8vw, 2.5rem);
@@ -215,4 +216,30 @@ const handleSubmit = async () => {
     padding: 12px 0;
   }
 }
+
+@media (max-width: 480px) {
+  .register-content {
+    max-width: 90%;
+    padding: 25px 15px;
+  }
+
+  .register-title {
+    font-size: clamp(1.5rem, 10vw, 2rem);
+  }
+
+  .register-subtitle {
+    font-size: clamp(0.8rem, 6vw, 1rem);
+  }
+
+  .register-form input {
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+
+  .register-btn {
+    font-size: 0.9rem;
+    padding: 10px 0;
+  }
+}
 </style>
+
