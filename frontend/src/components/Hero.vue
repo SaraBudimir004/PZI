@@ -20,8 +20,9 @@
 </template>
 
 <script setup>
+import axios from "axios"; 
 import { useRouter } from "vue-router";
-import axios from "axios";
+import { loginGuest } from "../services/auth";
 
 const props = defineProps({
   title: { type: String, default: "AI Pomoćnik za Učenje" },
@@ -31,27 +32,32 @@ const props = defineProps({
 
 const router = useRouter();
 
-// Funkcija za prijavu gosta
 const loginAsGuest = async () => {
   try {
-    const res = await axios.post("http://localhost:5000/gost/login");
+    let token = localStorage.getItem("guestToken");
 
-    // Spremi token gosta u localStorage
-    localStorage.setItem("guestToken", res.data.token);
+    if (!token) {
+      // Ako nema tokena, kreiraj novog gosta
+      const res = await axios.post("http://localhost:5000/gost/login"); 
+      token = res.data.token;
 
-    // Preusmjeri na dashboard
+      // Spremi token u localStorage
+      localStorage.setItem("guestToken", token);
+    }
+
+    // Preusmjeri korisnika na upload PDF ili dashboard
     router.push("/uploadpdf");
   } catch (err) {
     console.error("Greška pri prijavi gosta:", err);
     alert("Greška pri prijavi gosta. Pokušajte ponovno.");
   }
 };
+
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-/* Hero container sa grid pozadinom */
 .hero-container {
   position: relative;
   min-height: 100vh;
@@ -71,8 +77,6 @@ const loginAsGuest = async () => {
   background: rgba(0,0,0,0.8);
   z-index: 1;
 }
-
-/* Hero content iznad overlaya */
 .hero-content {
   position: relative;
   z-index: 2;
@@ -81,33 +85,13 @@ const loginAsGuest = async () => {
   gap: 20px;
   align-items: center;
 }
-
-/* Naslov */
-.main-title {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  margin: 0;
-  font-size: clamp(2.5rem, 6vw, 5rem);
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-  color: #fff;
-}
-
-/* Podnaslov */
-.subtitle {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 400;
-  margin: 0;
-  font-size: clamp(1.2rem, 3vw, 2rem);
-  color: #ccc;
-}
-
+.main-title { font-family: 'Poppins', sans-serif; font-weight: 700; color: #fff; font-size: clamp(2.5rem, 6vw, 5rem); margin: 0; }
+.subtitle { font-family: 'Poppins', sans-serif; font-weight: 400; color: #ccc; font-size: clamp(1.2rem, 3vw, 2rem); margin: 0; }
 .get-started-btn {
   background: linear-gradient(135deg, #70FCFB, #42CFEA);
   color: #0D0D0D;
   font-weight: 600;
   font-family: 'Poppins', sans-serif;
-  text-transform: none;
   min-width: 400px;
   max-width: 500px;
   padding: 16px 32px;
@@ -122,16 +106,6 @@ const loginAsGuest = async () => {
   box-shadow: 0 12px 30px rgba(112, 252, 251, 0.7);
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .main-title { font-size: clamp(2rem, 7vw, 4rem); }
-  .subtitle { font-size: clamp(1rem, 4vw, 1.8rem); }
-  .get-started-btn { padding: 14px 32px; }
-}
-@media (max-width: 600px) {
-  .main-title { font-size: clamp(1.8rem, 8vw, 3.5rem); }
-  .subtitle { font-size: clamp(0.9rem, 5vw, 1.5rem); }
-  .get-started-btn { padding: 12px 28px; }
-}
+@media (max-width: 1024px) { .main-title { font-size: clamp(2rem, 7vw, 4rem); } .subtitle { font-size: clamp(1rem, 4vw, 1.8rem); } .get-started-btn { padding: 14px 32px; } }
+@media (max-width: 600px) { .main-title { font-size: clamp(1.8rem, 8vw, 3.5rem); } .subtitle { font-size: clamp(0.9rem, 5vw, 1.5rem); } .get-started-btn { padding: 12px 28px; } }
 </style>

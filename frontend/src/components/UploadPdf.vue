@@ -48,7 +48,7 @@
         <!-- Poruka o statusu upload-a -->
         <div v-if="message" class="upload-message">{{ message }}</div>
 
-        <!-- Dugme za dashboard: ISTO STILIZIRANO KAO UČITAJ MATERIJALE -->
+        <!-- Dugme za dashboard -->
         <v-btn class="upload-btn" rounded block @click="goToDashboard">
           Idi na svoje materijale
         </v-btn>
@@ -71,7 +71,7 @@ const loading = ref(false)
 
 const router = useRouter()
 
-// Funkcija za upload PDF-a
+// Funkcija za upload PDF-a (rad i za goste i za korisnike)
 const handleUpload = async () => {
   if (!file.value) return alert("Odaberi PDF datoteku!")
   if (!pdfName.value.trim()) return alert("Unesi ime PDF-a!")
@@ -84,43 +84,36 @@ const handleUpload = async () => {
     formData.append("file", file.value)
     formData.append("name", pdfName.value)
 
-    const token = localStorage.getItem('token')
+    // Dohvati token (gost ili korisnik)
+    const token = localStorage.getItem('token') || localStorage.getItem('guestToken')
     if (!token) {
       message.value = "Niste prijavljeni!"
       loading.value = false
       return
     }
 
+    // Provjeri je li gost
+    const isGuest = !!localStorage.getItem('guestToken')
+    const url = isGuest 
+      ? "http://localhost:5000/gost/upload" 
+      : "http://localhost:5000/pdf/upload"
+
     const res = await axios.post(
-        "http://localhost:5000/pdf/upload",
+        url,
         formData,
         {headers: {"Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`}}
     )
-
-    // Pripremi podatke za dashboard
-    const uploadedPdfId = res.data.pdfId || null
-    const uploadedPdfName = pdfName.value
-    const totalPages = res.data.totalPages || 0
-    const uploadDate = new Date().toLocaleDateString()
 
     message.value = "PDF je uspješno uploadan!"
     dialog.value = false
     pdfName.value = ""
     file.value = null
 
-    // Preusmjeri na Dashboard sa query parametrima
-    router.push({
-      path: '/dashboard',
-      query: {
-        id: uploadedPdfId,
-        name: uploadedPdfName,
-        pages: totalPages,
-        date: uploadDate
-      }
-    })
+    // Preusmjeri na Dashboard
+    router.push('/dashboard')
   } catch (err) {
     console.error(err)
-    message.value = err.response?.data?.error || "Greška pri uploadu PDF-a"
+    message.value = err.response?.data?.message || "Greška pri uploadu PDF-a"
   } finally {
     loading.value = false
   }

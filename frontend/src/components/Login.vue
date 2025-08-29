@@ -41,8 +41,8 @@ const handleSubmit = async () => {
     localStorage.setItem('token', res.data.token);
     localStorage.setItem('role', 'admin');
     localStorage.setItem('user', JSON.stringify({
-      name: res.data.user.username || username.value,
-      avatar: res.data.user.avatar || ''
+      name: username.value,
+      avatar: ''
     }));
 
     router.push('/admin-panel');
