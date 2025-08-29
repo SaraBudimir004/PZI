@@ -70,6 +70,47 @@ exports.getPdfById = async (req, res) => {
     }
 };
 
+// Dohvati sve PDF-ove korisnika
+exports.getUserPdfs = async (req, res) => {
+    try {
+        const pdfs = await Pdf.find({ user: req.user.id }).sort({ createdAt: -1 });
+
+        res.json(pdfs.map(pdf => ({
+            id: pdf._id,                 // id PDF-a
+            name: pdf.originalName,      // <-- koristimo originalName
+            totalPages: pdf.totalPages,
+            date: pdf.createdAt.toISOString().split("T")[0]
+        })));
+    } catch (error) {
+        console.error("Greška u getUserPdfs:", error);
+        res.status(500).json({ message: "Greška pri dohvaćanju PDF-ova." });
+    }
+};
+
+
+exports.deletePdf = async (req, res) => {
+    try {
+        const pdfId = req.params.id;
+        const pdf = await Pdf.findOne({ _id: pdfId, user: req.user.id });
+
+        if (!pdf) {
+            return res.status(404).json({ message: "PDF nije pronađen" });
+        }
+
+        // Briši fajl sa diska
+        if (fs.existsSync(pdf.filePath)) {
+            fs.unlinkSync(pdf.filePath);
+        }
+
+        // Briši zapis iz baze
+        await pdf.deleteOne();
+
+        res.json({ message: "PDF je obrisan" });
+    } catch (err) {
+        console.error("Greška pri brisanju PDF-a:", err);
+        res.status(500).json({ message: "Greška pri brisanju PDF-a", error: err.message });
+    }
+};
 
 
 
