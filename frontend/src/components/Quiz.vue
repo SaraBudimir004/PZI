@@ -7,13 +7,13 @@
             <div class="question">{{ currentQuestion.question }}</div>
 
             <v-btn
-                v-for="(option, index) in currentQuestion.options"
-                :key="index"
-                class="option-btn"
-                :color="selectedIndex === index ? (isCorrect(option) ? 'success' : 'error') : 'white'"
-                :disabled="selectedIndex !== null"
-                @click="selectOption(option, index)"
-                rounded
+              v-for="(option, index) in currentQuestion.options"
+              :key="index"
+              class="option-btn"
+              :class="selectedIndex === index ? (isCorrect(option) ? 'correct' : 'wrong') : ''"
+              :disabled="selectedIndex !== null"
+              @click="selectOption(option, index)"
+              rounded
             >
               {{ option }}
             </v-btn>
@@ -21,11 +21,11 @@
         </v-card>
 
         <v-btn
-            v-if="selectedIndex !== null"
-            class="next-btn"
-            rounded
-            large
-            @click="nextQuestion"
+          v-if="selectedIndex !== null"
+          class="next-btn"
+          rounded
+          large
+          @click="nextQuestion"
         >
           Idi dalje
         </v-btn>
@@ -35,125 +35,169 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from "axios";
+import { useRoute } from "vue-router";
 
-const questions = ref([
-  {
-    question: "Što je AI?",
-    options: ["Umjetna inteligencija", "Elektronika", "Programiranje"],
-    answer: "Umjetna inteligencija"
-  },
-  {
-    question: "Što je ML?",
-    options: ["Strojno učenje", "Matematičko učenje", "Motorno učenje"],
-    answer: "Strojno učenje"
-  },
-  {
-    question: "Što je Deep Learning?",
-    options: ["Duboko učenje", "Površinsko učenje", "Linearno učenje"],
-    answer: "Duboko učenje"
-  },
-])
+const route = useRoute();
+const pdfId = route.query.pdfId;
 
-const currentIndex = ref(0)
-const selectedIndex = ref(null)
-const currentQuestion = ref(questions.value[currentIndex.value])
+const questions = ref([]);
+const currentIndex = ref(0);
+const selectedIndex = ref(null);
+const currentQuestion = ref({});
+
+const fetchQuiz = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get(`http://localhost:5000/ai/quiz/${pdfId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    questions.value = res.data.quiz.map(q => ({
+      question: q.pitanje,
+      options: q.odgovori,
+      answer: q.tocan
+    }));
+
+    if (questions.value.length > 0) {
+      currentIndex.value = 0;
+      currentQuestion.value = questions.value[0];
+    }
+  } catch (err) {
+    console.error("Greška pri dohvaćanju kviza:", err);
+  }
+};
 
 const selectOption = (option, index) => {
-  selectedIndex.value = index
-}
+  selectedIndex.value = index;
+};
 
 const isCorrect = (option) => {
-  return option === currentQuestion.value.answer
-}
+  if (!currentQuestion.value.answer) return false;
+  return option[0].toLowerCase() === currentQuestion.value.answer.toLowerCase();
+};
+
 
 const nextQuestion = () => {
-  selectedIndex.value = null
+  selectedIndex.value = null;
   if (currentIndex.value < questions.value.length - 1) {
-    currentIndex.value++
+    currentIndex.value++;
   } else {
-    currentIndex.value = 0
+    currentIndex.value = 0;
   }
-  currentQuestion.value = questions.value[currentIndex.value]
-}
+  currentQuestion.value = questions.value[currentIndex.value];
+};
+
+onMounted(() => {
+  if (pdfId) fetchQuiz();
+});
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-.flashcard-container {
+.quiz-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #0d0d0d;
+  background-color: #0d0d0d; /* fullscreen crno */
   padding: 20px;
 }
 
-.flashcard-card {
-  width: 100%;
-  max-width: 700px;
-  padding: 40px;
+.quiz-card {
+  width: 90%;
+  max-width: 800px;
+  margin: auto;
+  padding: 40px 30px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #1b1b1b; /* tamna kartica */
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5);
   text-align: center;
   display: flex;
   flex-direction: column;
   gap: 30px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  border: 1px solid #2a2a2a;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.quiz-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
 }
 
 .question {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  font-size: clamp(1.8rem, 4vw, 2.5rem);
-  color: #fff;
-  text-align: center;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  color: #e0e0e0;
+  margin-bottom: 25px;
 }
 
-.btn {
-  flex: 1;
-  min-width: 120px;
-  background: #333 !important;
+.option-btn {
+  width: 100%;
+  margin: 10px 0;
+  padding: 16px 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+  border-radius: 14px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #e0e0e0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.option-btn:hover {
+  background: #3a3a3a;
+  transform: translateY(-1px);
+}
+
+.option-btn.correct {
+  background-color: #2e7d32 !important;
   color: #fff !important;
-  border-radius: 12px;
+}
+
+.option-btn.wrong {
+  background-color: #c62828 !important;
+  color: #fff !important;
+}
+
+.next-btn {
+  margin-top: 25px;
   font-weight: 600;
   font-size: 1.2rem;
-  margin: 10px 0;
-  padding: 15px 0;
+  background: #2c2c2c;
+  color: #e0e0e0;
+  width: 100%;
+  padding: 16px 0;
+  border-radius: 14px;
+  border: 1px solid #444;
   transition: background 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btn:hover {
-  background: #444 !important;
-  transform: translateY(-2px);
-}
-
-.correct {
-  background: #2e7d32 !important; /* diskretna zelena */
-}
-
-.wrong {
-  background: #c62828 !important; /* diskretna crvena */
-}
-
-.next {
-  background: #1565c0 !important; /* diskretna plava */
+.next-btn:hover {
+  background: #3a3a3a;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
-  .flashcard-card {
-    padding: 30px;
+  .quiz-card {
+    padding: 30px 20px;
   }
   .question {
     font-size: clamp(1.5rem, 5vw, 2rem);
   }
-  .btn {
+  .option-btn, .next-btn {
     font-size: 1rem;
-    min-width: 100px;
-    padding: 12px 0;
+    padding: 14px 0;
   }
 }
 </style>
