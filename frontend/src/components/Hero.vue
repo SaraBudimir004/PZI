@@ -43,6 +43,8 @@ const loginAsGuest = async () => {
 
       // Spremi token u localStorage
       localStorage.setItem("guestToken", token);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("guestId", res.data.guestId);
     }
 
     // Preusmjeri korisnika na upload PDF ili dashboard

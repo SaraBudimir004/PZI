@@ -44,6 +44,40 @@
             :title="uploadedPdf.name || 'Sažetak PDF-a'"
         />
 
+        <!-- Modal za upload PDF-a -->
+        <v-dialog v-model="dialog" max-width="500px">
+          <v-card>
+            <v-card-title class="headline">Upload PDF</v-card-title>
+            <v-card-text>
+              <!-- Ime PDF-a -->
+              <v-text-field
+                  v-model="pdfName"
+                  label="Ime PDF dokumenta"
+                  outlined
+                  required
+              ></v-text-field>
+
+              <!-- Odabir PDF datoteke -->
+              <v-file-input
+                  v-model="file"
+                  label="Odaberi PDF dokument"
+                  accept=".pdf"
+                  prepend-icon="mdi-file-pdf"
+                  outlined
+              ></v-file-input>
+
+              <div v-if="message" class="red--text mt-2">{{ message }}</div>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="primary" @click="handleUpload" :loading="loading">
+                Pošalji
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
       </v-container>
     </v-main>
   </v-app>
@@ -71,6 +105,64 @@ export default {
     const summaryText = ref("");
     const showSummary = ref(false);
 
+    const dialog = ref(false)
+    const pdfName = ref("")
+    const file = ref(null)
+    const message = ref("")
+    const loading = ref(false)
+
+    const guestInfo = ref(null);
+
+    const openUploadModal = () => {
+      dialog.value = true;
+    };
+    const handleUpload = async () => {
+      if (!file.value) return alert("Odaberi PDF datoteku!")
+      if (!pdfName.value.trim()) return alert("Unesi ime PDF-a!")
+
+      loading.value = true
+      message.value = ""
+
+      try {
+        const formData = new FormData()
+        formData.append("file", file.value)
+        formData.append("name", pdfName.value)
+
+        // Dohvati token (gost ili korisnik)
+        const token = localStorage.getItem('token') || localStorage.getItem('guestToken')
+        if (!token) {
+          message.value = "Niste prijavljeni!"
+          loading.value = false
+          return
+        }
+
+        // Provjeri je li gost
+        const isGuest = !!localStorage.getItem('guestToken')
+        const url = isGuest
+            ? "http://localhost:5000/gost/upload"
+            : "http://localhost:5000/pdf/upload"
+
+        const res = await axios.post(
+            url,
+            formData,
+            {headers: {"Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`}}
+        )
+
+        message.value = "PDF je uspješno uploadan!"
+        dialog.value = false
+        pdfName.value = ""
+        file.value = null
+
+        await fetchUserPdfs()
+
+      } catch (err) {
+        console.error(err)
+        message.value = err.response?.data?.message || "Greška pri uploadu PDF-a"
+      } finally {
+        loading.value = false
+      }
+    }
+
     const fetchUserPdfs = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -95,7 +187,6 @@ export default {
       if (uploadedPdf.value.id === deletedPdfId)
         uploadedPdf.value = { id: "", name: "", totalPages: 0, date: "" };
     };
-
     const generateAndGoToFlashcards = async (pdfId) => {
       const token = localStorage.getItem("token");
       if (!token) return alert("Molimo prijavite se");
@@ -169,7 +260,16 @@ export default {
       }
     }
 
+    onMounted(async () => {
+      const token = localStorage.getItem("token");
+      const guestId = localStorage.getItem("guestId");
 
+      if (guestId) {
+        guestInfo.value = { guestId };
+      } else {
+        await fetchUserPdfs();
+      }
+    });
 
 
     onMounted(fetchUserPdfs);
@@ -186,7 +286,14 @@ export default {
       pdfUrl,
       showPdf,
       summaryText,
-      showSummary
+      showSummary,
+      handleUpload,
+      loading,
+      dialog,
+      pdfName,
+      file,
+      message,
+      openUploadModal
     };
   }
 };
