@@ -72,14 +72,22 @@ exports.getPdfById = async (req, res) => {
     }
 };
 
-// Dohvati sve PDF-ove korisnika
+// Dohvati sve PDF-ove korisnika ili gosta
 exports.getUserPdfs = async (req, res) => {
     try {
-        const pdfs = await Pdf.find({ user: req.user.id }).sort({ createdAt: -1 });
+        let query = {};
+
+        if (req.user.role === "guest") {
+            query = { guestTokenId: req.user.tokenId };
+        } else {
+            query = { user: req.user.id };
+        }
+
+        const pdfs = await Pdf.find(query).sort({ createdAt: -1 });
 
         res.json(pdfs.map(pdf => ({
-            id: pdf._id,                 // id PDF-a
-            name: pdf.originalName,      // <-- koristimo originalName
+            id: pdf._id,
+            name: pdf.originalName,
             totalPages: pdf.totalPages,
             date: pdf.createdAt.toISOString().split("T")[0]
         })));
@@ -88,6 +96,7 @@ exports.getUserPdfs = async (req, res) => {
         res.status(500).json({ message: "Greška pri dohvaćanju PDF-ova." });
     }
 };
+
 
 exports.deletePdf = async (req, res) => {
     try {
