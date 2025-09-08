@@ -3,7 +3,6 @@
     <v-card>
       <v-card-title class="headline">Upload PDF</v-card-title>
       <v-card-text>
-        <!-- Ime PDF-a -->
         <v-text-field
             v-model="pdfName"
             label="Ime PDF dokumenta"
@@ -11,7 +10,6 @@
             required
         ></v-text-field>
 
-        <!-- Odabir PDF datoteke -->
         <v-file-input
             v-model="file"
             label="Odaberi PDF dokument"
@@ -62,7 +60,6 @@ const handleUpload = async () => {
     formData.append('file', file.value)
     formData.append('name', pdfName.value)
 
-    // Dohvati token (gost ili korisnik)
     const token = localStorage.getItem('token') || localStorage.getItem('guestToken')
     if (!token) throw new Error('Niste prijavljeni')
 
@@ -75,7 +72,6 @@ const handleUpload = async () => {
       headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
     })
 
-    // Emituj podatke natrag roditelju
     emit('uploaded', res.data)
     emit('update:modelValue', false)
   } catch (err) {

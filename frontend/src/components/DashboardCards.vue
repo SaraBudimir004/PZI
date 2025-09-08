@@ -22,41 +22,41 @@
   </v-row>
 </template>
 
-<script>
-export default {
-  name: "DashboardCards",
-  props: {
-    uploadedPdf: { type: Object, required: true }
-  },
-  emits: ["open-pdf-viewer", "open-flashcards", "open-quiz", "open-summary"],
-  setup(props, { emit }) {
-    const cards = [
-      {
-        id: 1,
-        title: "Flashcards",
-        onClick: () => emit("open-flashcards", props.uploadedPdf.id)
-      },
-      {
-        id: 2,
-        title: "Kviz",
-        onClick: () => emit("open-quiz", props.uploadedPdf.id)
-      },
-      {
-        id: 3,
-        title: "Sažetak Pdf-a",
-        onClick: () => emit("open-summary", props.uploadedPdf.id)
-      },
-      {
-        id: 4,
-        title: "Pregledaj Pdf",
-        onClick: () => emit("open-pdf-viewer", props.uploadedPdf.id)
-      }
-    ];
+<script setup>
+import { computed } from "vue";
 
-    return {cards};
+const props = defineProps({
+  uploadedPdf: { type: Object, required: true }
+});
+
+
+const emit = defineEmits(["open-pdf-viewer", "open-flashcards", "open-quiz", "open-summary"]);
+
+const cards = [
+  {
+    id: 1,
+    title: "Flashcards",
+    onClick: () => emit("open-flashcards", props.uploadedPdf?.id)
+  },
+  {
+    id: 2,
+    title: "Kviz",
+    onClick: () => emit("open-quiz", props.uploadedPdf?.id)
+  },
+  {
+    id: 3,
+    title: "Sažetak Pdf-a",
+    onClick: () => emit("open-summary", props.uploadedPdf?.id)
+  },
+  {
+    id: 4,
+    title: "Pregledaj Pdf",
+    onClick: () => emit("open-pdf-viewer", props.uploadedPdf?.id)
   }
-};
+];
+
 </script>
+
 
 <style scoped>
 .action-card {

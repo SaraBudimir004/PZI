@@ -1,4 +1,4 @@
-// src/router/index.js
+
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../pages/Home.vue";
 import Register from "../pages/Register.vue"

@@ -8,7 +8,6 @@
       <v-card-title class="headline grey lighten-2">
         {{ title }}
         <v-spacer></v-spacer>
-        <!-- Zatvori gumb desno -->
         <v-btn small color="#FF5733" dark @click="close">Zatvori</v-btn>
       </v-card-title>
 
@@ -33,52 +32,45 @@
   </v-dialog>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from "vue";
 import VuePdfEmbed from "vue-pdf-embed";
 import "vue-pdf-embed/dist/styles/annotationLayer.css";
 import "vue-pdf-embed/dist/styles/textLayer.css";
 
-export default {
-  name: "PdfView",
-  components: {VuePdfEmbed},
-  props: {
-    pdfSource: {type: [String, Object], required: true},
-    title: {type: String, default: "Pregled PDF-a"},
-    show: {type: Boolean, default: false},
-    textContent: { type: String, default: "" },
-  },
-  emits: ["update:show"],
-  data() {
-    return {dialog: this.show};
-  },
-  watch: {
-    show(val) { this.dialog = val; },
-    dialog(val) { this.$emit("update:show", val); },
-  },
-  methods: {
-    close() { this.dialog = false; },
-  },
+const props = defineProps({
+  pdfSource: { type: [String, Object], required: true },
+  title: { type: String, default: "Pregled PDF-a" },
+  show: { type: Boolean, default: false },
+  textContent: { type: String, default: "" }
+});
+
+const emit = defineEmits(["update:show"]);
+
+const dialog = ref(props.show);
+
+watch(() => props.show, (val) => {
+  dialog.value = val;
+});
+
+watch(dialog, (val) => {
+  emit("update:show", val);
+});
+
+const close = () => {
+  dialog.value = false;
 };
 </script>
 
 <style scoped>
-.pdf-container .canvasWrapper {
+.pdf-container{
   margin: 16px 0;
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.pdf-container .textLayer {
+.pdf-container{
   padding: 8px;
 }
 
-.v-card-title {
-  display: flex;
-  align-items: center;
-}
-
-.v-btn {
-  text-transform: none;
-  font-weight: 600;
-}
 </style>
