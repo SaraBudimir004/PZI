@@ -20,26 +20,30 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
 import axios from "axios";
+import { useRouter } from "vue-router";
 
-const props = defineProps({
-  title: { type: String, default: "AI Pomoćnik za Učenje" },
-  subtitle: { type: String, default: "Brže i pametnije učenje pomoću AI-a" },
+const { title, subtitle, buttonLink1 } = defineProps({
+  title: { type: String, default: "AI POMOĆNIK ZA UČENJE" },
+  subtitle: { type: String, default: "Brže i pametnije učenje pomoću AI" },
   buttonLink1: { type: String, default: "/login" }
 });
 
 const router = useRouter();
 
-// Funkcija za prijavu gosta
 const loginAsGuest = async () => {
   try {
-    const res = await axios.post("http://localhost:5000/gost/login");
+    let token = localStorage.getItem("guestToken");
 
-    // Spremi token gosta u localStorage
-    localStorage.setItem("guestToken", res.data.token);
+    if (!token) {
+      const res = await axios.post("http://localhost:5000/gost/login");
+      token = res.data.token;
 
-    // Preusmjeri na dashboard
+      localStorage.setItem("guestToken", token);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("guestId", res.data.guestId);
+    }
+
     router.push("/uploadpdf");
   } catch (err) {
     console.error("Greška pri prijavi gosta:", err);
@@ -48,10 +52,10 @@ const loginAsGuest = async () => {
 };
 </script>
 
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-/* Hero container sa grid pozadinom */
 .hero-container {
   position: relative;
   min-height: 100vh;
@@ -63,7 +67,9 @@ const loginAsGuest = async () => {
   background-image: url('../assets/Grid.png');
   background-position: center;
   background-repeat: no-repeat;
+  background-size: cover;
 }
+
 .hero-container::before {
   content: '';
   position: absolute;
@@ -72,7 +78,6 @@ const loginAsGuest = async () => {
   z-index: 1;
 }
 
-/* Hero content iznad overlaya */
 .hero-content {
   position: relative;
   z-index: 2;
@@ -80,26 +85,28 @@ const loginAsGuest = async () => {
   flex-direction: column;
   gap: 20px;
   align-items: center;
+  width: 90%;
+  max-width: 600px;
 }
 
-/* Naslov */
 .main-title {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  margin: 0;
-  font-size: clamp(2.5rem, 6vw, 5rem);
-  line-height: 1.2;
-  letter-spacing: -0.5px;
   color: #fff;
+  font-size: clamp(2rem, 6vw, 4rem);
+  margin: 0;
+  white-space: nowrap;   /* sprječava prijelom u novi red */
+  overflow: hidden;     
+  text-overflow: ellipsis; 
 }
 
-/* Podnaslov */
+
 .subtitle {
   font-family: 'Poppins', sans-serif;
   font-weight: 400;
-  margin: 0;
-  font-size: clamp(1.2rem, 3vw, 2rem);
   color: #ccc;
+  font-size: clamp(1rem, 3vw, 2rem);
+  margin: 0;
 }
 
 .get-started-btn {
@@ -107,31 +114,45 @@ const loginAsGuest = async () => {
   color: #0D0D0D;
   font-weight: 600;
   font-family: 'Poppins', sans-serif;
-  text-transform: none;
-  min-width: 400px;
-  max-width: 500px;
+  width: 100%;       
+  max-width: 400px;    
   padding: 16px 32px;
   border-radius: 20px;
   box-shadow: 0 8px 25px rgba(112, 252, 251, 0.5);
   backdrop-filter: blur(10px);
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2vw, 1.2rem); 
   transition: all 0.3s ease;
 }
+
 .get-started-btn:hover {
   transform: translateY(-5px) scale(1.05);
   box-shadow: 0 12px 30px rgba(112, 252, 251, 0.7);
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .main-title { font-size: clamp(2rem, 7vw, 4rem); }
-  .subtitle { font-size: clamp(1rem, 4vw, 1.8rem); }
-  .get-started-btn { padding: 14px 32px; }
+/* Media query za manje ekrane */
+@media (max-width: 768px) {
+  .hero-content {
+    gap: 15px;
+  }
+  .get-started-btn {
+    padding: 14px 24px;
+    font-size: 1rem;
+  }
 }
-@media (max-width: 600px) {
-  .main-title { font-size: clamp(1.8rem, 8vw, 3.5rem); }
-  .subtitle { font-size: clamp(0.9rem, 5vw, 1.5rem); }
-  .get-started-btn { padding: 12px 28px; }
+
+@media (max-width: 480px) {
+  .main-title {
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+  }
+  .subtitle {
+    font-size: clamp(0.8rem, 5vw, 1.2rem);
+  }
+  .get-started-btn {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    max-width: 90%;
+  }
 }
+
 </style>

@@ -87,9 +87,15 @@ ${clipped}
 
         let flashcards = [];
         try {
-            flashcards = JSON.parse(answer);
+            // Regex za izvlačenje JSON liste unutar stringa
+            const match = answer.match(/\[\s*{[\s\S]*}\s*\]/);
+            if (match) {
+                flashcards = JSON.parse(match[0]); // parsiraj stvarni JSON
+            } else {
+                flashcards = [{ pitanje: "Greška pri parsiranju", odgovor: answer }];
+            }
         } catch (err) {
-            flashcards = [{ pitanje: "AI odgovor nije parsiran", odgovor: answer }];
+            flashcards = [{ pitanje: "Greška pri parsiranju", odgovor: answer }];
         }
 
         res.json({ flashcards });
@@ -99,42 +105,51 @@ ${clipped}
     }
 };
 
-// Kviz generator
 exports.generateQuiz = async (req, res) => {
     try {
         const pdf = await Pdf.findById(req.params.pdfId);
         if (!pdf) return res.status(404).json({ error: "PDF nije pronađen" });
 
+        // Uzmi prvih 20 000 znakova da AI ne preoptereti prompt
         const clipped = pdf.text?.slice(0, 20000) || "";
 
+        // Prompt za AI da vrati isključivo JSON
         const prompt = `
-Pročitaj pažljivo tekst i na temelju njega napravi kviz.Napiši dovoljno pitanja da obuhvatiš sve bitne dijelove teksta,neka bude što više pitanja.  
+Pročitaj pažljivo *isključivo sadržaj skripte* (ignoriraj uvodne napomene, imena profesora i sve što nije dio skripte). 
+Na temelju tog sadržaja napravi kviz. 
+
+Napiši dovoljno pitanja da obuhvatiš sve bitne dijelove teksta.  
 Svako pitanje treba imati 4 odgovora (označena "a", "b", "c", "d") i označi točan odgovor.  
+
 Vrati **isključivo JSON** u ovom formatu:
 [
-  { "pitanje": "...", "odgovori": ["a) ...","b) ...","c) ...","d) ..."], "tocan": "b" },
-  ...
+  { "pitanje": "...", "odgovori": ["a) ...","b) ...","c) ...","d) ..."], "tocan": "b" }
 ]
-Tekst: ${clipped}
 
+Sadržaj skripte:
+${clipped}
 `;
+
 
         const answer = await callAI(prompt);
 
         let quiz = [];
         try {
+            // pokušaj parsiranja AI odgovora kao JSON
             quiz = JSON.parse(answer);
+            if (!Array.isArray(quiz)) throw new Error("Odgovor nije niz");
         } catch (err) {
+            console.error("Greška pri parsiranju AI odgovora:", err);
+            // fallback ako AI ne vrati validan JSON
             quiz = [{ pitanje: "AI odgovor nije parsiran", odgovori: [], tocan: "" }];
         }
 
         res.json({ quiz });
     } catch (err) {
-        console.error(err);
+        console.error("Greška pri generiranju kviza:", err);
         res.status(500).json({ error: "Greška pri generiranju kviza" });
     }
 };
-
 // Sažetak PDF-a
 exports.generateSummary = async (req, res) => {
     try {

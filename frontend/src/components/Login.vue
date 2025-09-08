@@ -1,13 +1,15 @@
 <template>
   <section class="register-container">
     <div class="register-content">
-      <h2 class="register-title">Prijava</h2>
+      <h2 class="register-title">PRIJAVA</h2>
       <p class="register-subtitle">Prijavite se u svoj račun i počnite učiti uz AI pomoćnika</p>
+
       <form @submit.prevent="handleSubmit" class="register-form">
         <input type="text" v-model="username" placeholder="Username" required />
         <input type="password" v-model="password" placeholder="Password" required />
         <button type="submit" class="register-btn">Prijavite se</button>
       </form>
+
       <p v-if="error" style="color:red;">{{ error }}</p>
 
       <p class="login-link">
@@ -19,89 +21,101 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 import { loginUser, loginAdmin } from '../services/auth.js';
-const error = ref("");
+import { useRouter } from 'vue-router';
 
-const username = ref('')
-const password = ref('')
+const router = useRouter();
+const username = ref('');
+const password = ref('');
+const error = ref('');
 
 const handleSubmit = async () => {
+  error.value = '';
+
   try {
-    // Prvo pokušaj admin login
+    const resUser = await loginUser(username.value, password.value);
+
+    localStorage.setItem('token', resUser.data.token);
+    localStorage.setItem('role', 'user');
+    localStorage.setItem('user', JSON.stringify({
+      name: resUser.data.user.username || username.value,
+      avatar: resUser.data.user.avatar || ''
+    }));
+
+    router.push('/uploadpdf');
+  } catch (userErr) {
+    console.log("User login failed:", userErr);
+
     try {
-      const res = await loginAdmin(username.value, password.value)
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('role', 'admin')
-      window.location.href = '/admin-panel' // ruta za admina
-      return
-    } catch (err) {
-      // Ako nije admin, pokušaj user login
-      const res = await loginUser(username.value, password.value)
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('role', 'user')
-      window.location.href = '/uploadpdf' // ruta za usera
-      return
+      const resAdmin = await loginAdmin(username.value, password.value);
+
+      localStorage.setItem('token', resAdmin.data.token);
+      localStorage.setItem('role', 'admin');
+      localStorage.setItem('user', JSON.stringify({
+        name: username.value,
+        avatar: ''
+      }));
+
+      router.push('/admin-panel');
+    } catch (adminErr) {
+      console.error("Admin login failed:", adminErr);
+      error.value = adminErr.response?.data?.message || 'Neispravni podaci za prijavu';
     }
-  } catch (err) {
-    error.value = 'Neispravni podaci za prijavu'
   }
-}
+};
+
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-/* Container */
 .register-container {
   position: relative;
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0;
-  box-sizing: border-box;
+  padding: 0 10px;
   background-image: url('../assets/Grid.png');
   background-position: center;
   background-repeat: no-repeat;
-  text-align: center;
+  background-size: cover;
   background-color: #0D0D0D;
   color: #fff;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 1;
-  }
 }
 
-/* Centrirani sadržaj */
+.register-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1;
+}
+
 .register-content {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 40%;
-  max-height: 40%;
-  width: 100%;
-  align-items: center;
+  width: 90%;
+  max-width: 600px; 
   padding: 40px 30px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(0, 0, 0, 0.7); 
   border-radius: 16px;
   backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  text-align: center;
 }
 
-/* Naslov i podnaslov */
 .register-title {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
   font-size: clamp(2rem, 6vw, 3rem);
   margin: 0;
+  color: #fff;
 }
 
 .register-subtitle {
@@ -112,7 +126,6 @@ const handleSubmit = async () => {
   margin: 0;
 }
 
-/* Form inputi */
 .register-form {
   display: flex;
   flex-direction: column;
@@ -127,7 +140,7 @@ const handleSubmit = async () => {
   font-family: 'Poppins', sans-serif;
   font-size: 1rem;
   outline: none;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   transition: all 0.3s ease;
 }
@@ -137,11 +150,10 @@ const handleSubmit = async () => {
 }
 
 .register-form input:focus {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 0 10px #70FCFB;
 }
 
-/* Gumb prijave */
 .register-btn {
   padding: 14px 0;
   background: linear-gradient(135deg, #70FCFB, #42CFEA);
@@ -153,6 +165,7 @@ const handleSubmit = async () => {
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 100%; 
 }
 
 .register-btn:hover {
@@ -161,7 +174,6 @@ const handleSubmit = async () => {
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
 
-/* Link za registraciju */
 .login-link {
   font-family: 'Poppins', sans-serif;
   font-size: 0.9rem;
@@ -174,11 +186,11 @@ const handleSubmit = async () => {
   margin-left: 5px;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .register-content {
+    max-width: 400px;
     padding: 30px 20px;
-  }
+  } 
 
   .register-title {
     font-size: clamp(1.8rem, 8vw, 2.5rem);
@@ -193,4 +205,30 @@ const handleSubmit = async () => {
     padding: 12px 0;
   }
 }
+
+@media (max-width: 480px) {
+  .register-content {
+    max-width: 90%;
+    padding: 25px 15px;
+  }
+
+  .register-title {
+    font-size: clamp(1.5rem, 10vw, 2rem);
+  }
+
+  .register-subtitle {
+    font-size: clamp(0.8rem, 6vw, 1rem);
+  }
+
+  .register-form input {
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+
+  .register-btn {
+    font-size: 0.9rem;
+    padding: 10px 0;
+  }
+}
 </style>
+

@@ -1,9 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000"; // prilagodi backend URL
+const BASE_URL = "http://localhost:5000"; 
 
 // USER AUTH
 export const registerUser = async (data) => {
+    console.log("Pozvana registerUser funkcija");
     try {
         const res = await axios.post(`${BASE_URL}/users/register`, data);
         return res.data;
@@ -23,5 +24,20 @@ export async function loginAdmin(username, password) {
 
 // GUEST AUTH
 export async function loginGuest() {
-    return axios.post(`${BASE_URL}/guest/login`);
+    // Provjeri postoji li već token u localStorage
+    let token = localStorage.getItem("guestToken");
+    if (token) {
+        // Ako token postoji, pošalji ga backendu da provjeri i dobije isti token natrag
+        const res = await axios.post(`${BASE_URL}/guest/login`, null, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    } else {
+        // Ako nema tokena, kreiraj novog gosta
+        const res = await axios.post(`${BASE_URL}/guest/login`);
+        token = res.data.token;
+        localStorage.setItem("guestToken", token);
+        return res.data;
+    }
 }
+

@@ -3,7 +3,7 @@
     <v-row align="center" justify="center" class="fill-height">
       <v-col cols="12" md="6" class="upload-content">
         <!-- Naslov i podnaslov -->
-        <h2 class="upload-title">Učitaj Skriptu</h2>
+        <h2 class="upload-title">UČITAJ SKRIPTU</h2>
         <p class="upload-subtitle">
           Odaberite PDF datoteku kako biste dodali svoj materijal za učenje
         </p>
@@ -47,6 +47,11 @@
 
         <!-- Poruka o statusu upload-a -->
         <div v-if="message" class="upload-message">{{ message }}</div>
+
+        <!-- Dugme za dashboard -->
+        <v-btn class="upload-btn" rounded block @click="goToDashboard">
+          Idi na svoje materijale
+        </v-btn>
       </v-col>
     </v-row>
   </v-container>
@@ -57,7 +62,6 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-// Reaktivne varijable
 const dialog = ref(false)
 const pdfName = ref("")
 const file = ref(null)
@@ -66,7 +70,6 @@ const loading = ref(false)
 
 const router = useRouter()
 
-// Funkcija za upload PDF-a
 const handleUpload = async () => {
   if (!file.value) return alert("Odaberi PDF datoteku!")
   if (!pdfName.value.trim()) return alert("Unesi ime PDF-a!")
@@ -79,75 +82,76 @@ const handleUpload = async () => {
     formData.append("file", file.value)
     formData.append("name", pdfName.value)
 
-    // Dohvati token (guest ili user)
-    const token = localStorage.getItem("guestToken") || localStorage.getItem("userToken")
+    const token = localStorage.getItem('token') || localStorage.getItem('guestToken')
     if (!token) {
       message.value = "Niste prijavljeni!"
       loading.value = false
       return
     }
 
-    // Upload na backend
+    // Provjeri je li gost
+    const isGuest = !!localStorage.getItem('guestToken')
+    const url = isGuest 
+      ? "http://localhost:5000/gost/upload" 
+      : "http://localhost:5000/pdf/upload"
+
     const res = await axios.post(
-        "http://localhost:5000/pdf/upload",
+        url,
         formData,
         {headers: {"Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`}}
     )
-
-    // Pripremi podatke za dashboard
-    const uploadedPdfId = res.data.pdfId || null
-    const uploadedPdfName = pdfName.value
-    const totalPages = res.data.totalPages || 0
-    const uploadDate = new Date().toLocaleDateString()
 
     message.value = "PDF je uspješno uploadan!"
     dialog.value = false
     pdfName.value = ""
     file.value = null
 
-    // Preusmjeri na Dashboard sa query parametrima
-    router.push({
-      path: '/dashboard',
-      query: {
-        id: uploadedPdfId,
-        name: uploadedPdfName,
-        pages: totalPages,
-        date: uploadDate
-      }
-    })
+    // Preusmjeri na Dashboard
+    router.push('/dashboard')
   } catch (err) {
     console.error(err)
-    message.value = err.response?.data?.error || "Greška pri uploadu PDF-a"
+    message.value = err.response?.data?.message || "Greška pri uploadu PDF-a"
   } finally {
     loading.value = false
   }
 }
+
+// Funkcija za dugme "Idi na svoje materijale"
+const goToDashboard = () => {
+  router.push('/dashboard')
+}
 </script>
 
 <style scoped>
-/* Glavni container za upload */
 .upload-container {
-  position: relative;
-  min-height: 100vh;
+   position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
-  align-items: center;
   justify-content: center;
-  text-align: center;
-  background-color: #0D0D0D;
+  align-items: center;
+  padding: 0;
+  box-sizing: border-box;
   background-image: url('../assets/Grid.png');
   background-position: center;
   background-repeat: no-repeat;
+  background-size: cover;       
+  background-attachment: fixed;  
+  text-align: center;
+  background-color: #0D0D0D;
+  color: #fff;
 }
+
 
 .upload-container::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0,0,0,0.8);
   z-index: 1;
 }
 
-/* Kartica s upload sadržajem */
 .upload-content {
   position: relative;
   z-index: 2;
@@ -155,13 +159,16 @@ const handleUpload = async () => {
   flex-direction: column;
   gap: 20px;
   align-items: center;
+  width: 90%;          
+  max-width: 600px;   
   padding: 40px 30px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0,0,0,0.7); 
   border-radius: 16px;
   backdrop-filter: blur(12px);
+  box-sizing: border-box;
+  text-align: center;
 }
 
-/* Naslov i podnaslov */
 .upload-title {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
@@ -178,33 +185,72 @@ const handleUpload = async () => {
   margin: 0;
 }
 
-/* Dugme za upload */
 .upload-btn {
   background: linear-gradient(135deg, #70FCFB, #42CFEA);
   color: #0D0D0D;
   font-weight: 600;
   font-family: 'Poppins', sans-serif;
   text-transform: none;
-  min-width: 400px;
+  width: 100%;
   max-width: 500px;
-  padding: 16px 32px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(112, 252, 251, 0.5);
-  backdrop-filter: blur(10px);
-  font-size: 1.2rem;
+  padding: 14px 0;
+  border-radius: 16px;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .upload-btn:hover {
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 12px 30px rgba(112, 252, 251, 0.7);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(112, 252, 251, 0.6);
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
 
-/* Poruka o uploadu */
 .upload-message {
   margin-top: 10px;
   color: #70FCFB;
   font-weight: 600;
 }
+
+@media (max-width: 768px) {
+  .upload-content {
+    max-width: 450px;
+    padding: 35px 25px;
+  }
+
+  .upload-title {
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
+  }
+
+  .upload-subtitle {
+    font-size: clamp(0.9rem, 4vw, 1.3rem);
+  }
+
+  .upload-btn {
+    font-size: 0.95rem;
+    padding: 12px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-content {
+    width: 90%;
+    padding: 25px 15px;
+  }
+
+  .upload-title {
+    font-size: clamp(1.5rem, 8vw, 2.2rem);
+  }
+
+  .upload-subtitle {
+    font-size: clamp(0.8rem, 5vw, 1.1rem);
+  }
+
+  .upload-btn {
+    font-size: 0.9rem;
+    padding: 10px 0;
+  }
+}
+
 </style>

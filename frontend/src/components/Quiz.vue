@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="quiz-container">
     <v-row justify="center" align="center" class="fill-height">
-      <v-col cols="12" sm="8" md="6" class="quiz-col">
+      <v-col cols="12" sm="10" md="9" lg="8" class="quiz-col">
         <v-card class="quiz-card">
           <v-card-text>
             <div class="question">{{ currentQuestion.question }}</div>
@@ -10,7 +10,11 @@
                 v-for="(option, index) in currentQuestion.options"
                 :key="index"
                 class="option-btn"
-                :color="selectedIndex === index ? (isCorrect(option) ? 'success' : 'error') : 'white'"
+                :class="[
+                selectedIndex === index
+                  ? (isCorrect(option) ? 'correct' : 'wrong')
+                  : (selectedIndex !== null && isCorrect(option) ? 'correct' : '')
+              ]"
                 :disabled="selectedIndex !== null"
                 @click="selectOption(option, index)"
                 rounded
@@ -35,135 +39,168 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import {ref, onMounted} from 'vue'
+import axios from "axios";
+import {useRoute} from "vue-router";
 
-const questions = ref([
-  {
-    question: "Što je AI?",
-    options: ["Umjetna inteligencija", "Elektronika", "Programiranje"],
-    answer: "Umjetna inteligencija"
-  },
-  {
-    question: "Što je ML?",
-    options: ["Strojno učenje", "Matematičko učenje", "Motorno učenje"],
-    answer: "Strojno učenje"
-  },
-  {
-    question: "Što je Deep Learning?",
-    options: ["Duboko učenje", "Površinsko učenje", "Linearno učenje"],
-    answer: "Duboko učenje"
-  },
-])
+const route = useRoute();
+const pdfId = route.query.pdfId;
 
-const currentIndex = ref(0)
-const selectedIndex = ref(null)
-const currentQuestion = ref(questions.value[currentIndex.value])
+const questions = ref([]);
+const currentIndex = ref(0);
+const selectedIndex = ref(null);
+const currentQuestion = ref({});
+
+const fetchQuiz = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get(`http://localhost:5000/ai/quiz/${pdfId}`, {
+      headers: {Authorization: `Bearer ${token}`}
+    });
+
+    questions.value = res.data.quiz.map(q => ({
+      question: q.pitanje,
+      options: q.odgovori,
+      answer: q.tocan
+    }));
+
+    if (questions.value.length > 0) {
+      currentIndex.value = 0;
+      currentQuestion.value = questions.value[0];
+    }
+  } catch (err) {
+    console.error("Greška pri dohvaćanju kviza:", err);
+  }
+};
 
 const selectOption = (option, index) => {
-  selectedIndex.value = index
-}
+  selectedIndex.value = index;
+};
 
 const isCorrect = (option) => {
-  return option === currentQuestion.value.answer
-}
+  if (!currentQuestion.value.answer) return false;
+  return option[0].toLowerCase() === currentQuestion.value.answer.toLowerCase();
+};
 
 const nextQuestion = () => {
-  selectedIndex.value = null
+  selectedIndex.value = null;
   if (currentIndex.value < questions.value.length - 1) {
-    currentIndex.value++
+    currentIndex.value++;
   } else {
-    currentIndex.value = 0
+    currentIndex.value = 0;
   }
-  currentQuestion.value = questions.value[currentIndex.value]
-}
+  currentQuestion.value = questions.value[currentIndex.value];
+};
+
+onMounted(() => {
+  if (pdfId) fetchQuiz();
+});
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
 .quiz-container {
-  min-height: calc(100vh - 80px);
-  background-color: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0d0d0d;
+  padding: 20px;
+}
+
+.quiz-card {
+  width: 100%;
+  max-width: 1000px;
+  margin: auto;
+  padding: 50px 40px;
+  border-radius: 24px;
+  background: #1b1b1b;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  border: 1px solid #2a2a2a;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.quiz-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.question {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  color: #e0e0e0;
+  margin-bottom: 25px;
+}
+
+.option-btn {
+  width: 100%;
+  margin: 12px 0;
+  padding: clamp(14px, 2vw, 20px) 16px;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  font-weight: 500;
+  border-radius: 16px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #e0e0e0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  white-space: normal;
+  text-align: left;
+  line-height: 1.4;
+  word-wrap: break-word;
+  text-transform: none;
+}
+
+.option-btn:hover {
+  background: #3a3a3a;
+  transform: translateY(-1px);
+}
+
+.option-btn.correct {
+  background-color: #2e7d32 !important;
+  color: #fff !important;
+}
+
+.option-btn.wrong {
+  background-color: #c62828 !important;
+  color: #fff !important;
+}
+
+.next-btn {
+  margin-top: 25px;
+  font-weight: 600;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  background: #2c2c2c;
+  color: #e0e0e0;
+  width: 100%;
+  padding: clamp(14px, 2vw, 20px) 0;
+  border-radius: 16px;
+  border: 1px solid #444;
+  transition: background 0.3s ease, transform 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.quiz-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.quiz-card {
-  width: 100%;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-.question {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-/* Opcije */
-.option-btn {
-  width: 100%;
-  margin: 10px 0;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  color: #0D0D0D;
-  background: #ffffff;
-  text-transform: none;
-  transition: all 0.3s ease;
-}
-
-.option-btn:hover {
-  background: #e0f7fa;
-}
-
-/* Gumb Idi dalje */
-.next-btn {
-  background: linear-gradient(135deg, #70FCFB, #42CFEA);
-  color: #0D0D0D;
-  font-weight: 600;
-  font-family: 'Poppins', sans-serif;
-  text-transform: none;
-  padding: clamp(12px, 2vw, 20px) clamp(24px, 5vw, 60px);
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(112, 252, 251, 0.5);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
 .next-btn:hover {
-  transform: translateY(-3px) scale(1.05);
-  background: linear-gradient(135deg, #42CFEA, #70FCFB);
-  box-shadow: 0 12px 30px rgba(112, 252, 251, 0.7);
+  background: #3a3a3a;
+  transform: translateY(-1px);
 }
 
-/* Responzivno */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .quiz-card {
-    padding: 15px;
-  }
-
-  .question {
-    font-size: clamp(1.2rem, 4vw, 1.5rem);
-  }
-
-  .option-btn {
-    font-size: 0.95rem;
-  }
-
-  .next-btn {
-    font-size: 0.9rem;
-    padding: 10px 20px;
+    padding: 30px 20px;
   }
 }
 </style>

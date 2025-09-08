@@ -6,7 +6,8 @@ const {
     deleteUser,
     getAllPdfs,
     deletePdf,
-    getPdfsByUser
+    getPdfsByUser,
+    getPdfContent
 } = require('../controllers/adminControllers');
 
 const router = express.Router();
@@ -30,5 +31,8 @@ router.delete('/users/:userId', deleteUser);    // brisanje korisnika (i njegovi
 router.get('/pdfs', getAllPdfs);                     // pregled svih PDF-ova
 router.get('/pdfs/user/:userId', getPdfsByUser);    // filtriranje PDF-ova po korisniku
 router.delete('/pdfs/:pdfId', deletePdf);           // brisanje PDF-a
+// Ruta za dohvat sadržaja PDF-a po ID-u
+router.get('/pdf/:pdfId', getPdfContent);
+
 
 module.exports = router;
