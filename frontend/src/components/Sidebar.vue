@@ -40,7 +40,7 @@
         </v-list-item-icon>
 
         <v-list-item-content class="d-flex justify-space-between align-center">
-          <span class="truncate-text">{{ pdf.name }}</span>
+          <span class="pdf-name">{{ pdf.name }}</span>
           <span class="pdf-pages text-caption grey--text text--darken-1">
               Stranice: {{ pdf.totalPages || 0 }}
             </span>
@@ -48,7 +48,6 @@
       </v-list-item>
     </v-list>
 
-    <!-- Custom context menu -->
     <div
         v-if="contextMenu.visible"
         :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
@@ -62,76 +61,64 @@
   </v-navigation-drawer>
 </template>
 
-<script>
+<script setup>
 import { ref } from "vue";
 import axios from "axios";
 
-export default {
-  name: "Sidebar",
-  props: {
-    userPdfs: {
-      type: Array,
-      default: () => []
-    },
-    selectedPdfId: {
-      type: String,
-      default: null
-    }
-  },
-  emits: ["pdf-select", "upload-click", "pdf-deleted"],
-  setup(props, { emit }) {
+const props = defineProps({
+  userPdfs: { type: Array, default: () => [] },
+  selectedPdfId: { type: String, default: null }
+});
 
-    const contextMenu = ref({
-      visible: false,
-      x: 0,
-      y: 0,
-      pdfId: null
+const emit = defineEmits(["pdf-select", "upload-click", "pdf-deleted"]);
+
+const contextMenu = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  pdfId: null
+});
+
+const showContextMenu = (event, pdfId) => {
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    pdfId
+  };
+};
+
+const hideContextMenu = () => {
+  contextMenu.value.visible = false;
+};
+
+const handleContextDelete = () => {
+  if (contextMenu.value.pdfId) {
+    deletePdf(contextMenu.value.pdfId);
+  }
+  hideContextMenu();
+};
+
+const deletePdf = async (pdfId) => {
+  const token = localStorage.getItem("token");
+  if (!token) return alert("Molimo prijavite se");
+
+  if (!confirm("Jeste li sigurni da želite obrisati ovaj PDF?")) return;
+
+  try {
+    await axios.delete(`http://localhost:5000/pdf/${pdfId}`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
 
-    const showContextMenu = (event, pdfId) => {
-      contextMenu.value = {
-        visible: true,
-        x: event.clientX,
-        y: event.clientY,
-        pdfId
-      };
-    };
+    emit("pdf-deleted", pdfId);
 
-    const hideContextMenu = () => {
-      contextMenu.value.visible = false;
-    };
-
-    const handleContextDelete = () => {
-      if (contextMenu.value.pdfId) {
-        deletePdf(contextMenu.value.pdfId);
-      }
-      hideContextMenu();
-    };
-
-    const deletePdf = async (pdfId) => {
-      const token = localStorage.getItem("token");
-      if (!token) return alert("Molimo prijavite se");
-
-      if (!confirm("Jeste li sigurni da želite obrisati ovaj PDF?")) return;
-
-      try {
-        await axios.delete(`http://localhost:5000/pdf/${pdfId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        // Emit događaj da Dashboard zna da je PDF obrisan
-        emit("pdf-deleted", pdfId);
-
-      } catch (err) {
-        console.error("Greška pri brisanju PDF-a:", err);
-        alert("Greška pri brisanju PDF-a.");
-      }
-    };
-
-    return { deletePdf, showContextMenu, hideContextMenu, contextMenu, handleContextDelete };
+  } catch (err) {
+    console.error("Greška pri brisanju PDF-a:", err);
+    alert("Greška pri brisanju PDF-a.");
   }
 };
 </script>
+
 
 <style scoped>
 .side-nav {
@@ -143,7 +130,6 @@ export default {
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
 }
 
-/* Logo */
 .logo {
   margin-bottom: 20px;
   padding-left: 16px;
@@ -153,7 +139,6 @@ export default {
   color: #2c3e50;
 }
 
-/* Upload dugme */
 .upload-sidebar-item {
   border-radius: 10px;
   margin: 8px 12px;
@@ -169,7 +154,6 @@ export default {
   transform: translateX(4px);
 }
 
-/* PDF item */
 .v-list-item {
   margin: 4px 8px;
   border-radius: 10px;
@@ -186,8 +170,7 @@ export default {
   border-radius: 0 10px 10px 0;
 }
 
-/* Naziv PDF-a */
-.truncate-text {
+.pdf-name{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -196,14 +179,12 @@ export default {
   font-weight: 500;
 }
 
-/* Stranice PDF-a */
 .pdf-pages {
   color: #5f6f7f;
   font-family: 'Poppins', sans-serif;
   font-size: 0.75rem;
 }
 
-/* Context menu */
 .custom-context-menu {
   position: fixed;
   background: #ffffff;

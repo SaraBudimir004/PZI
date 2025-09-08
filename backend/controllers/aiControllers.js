@@ -66,7 +66,7 @@ exports.generateFlashcards = async (req, res) => {
         const clipped = pdf.text?.slice(0, 20000) || "";
 
         const prompt = `
-Pročitaj pažljivo sljedeći tekst i kreiraj  3 flashcards (pitanja i odgovore) na temelju sadržaja. Napravi **onoliko flashcards koliko je potrebno da obuhvatiš sve važne pojmove i informacije iz teksta**. 
+Pročitaj pažljivo sljedeći tekst i kreiraj flashcards (pitanja i odgovore) na temelju sadržaja. Napravi **onoliko flashcards koliko je potrebno da obuhvatiš sve važne pojmove i informacije iz teksta**. 
 
 - Svako pitanje treba biti jasno i precizno.
 - Odgovori trebaju biti detaljni, napisani književnim hrvatskim jezikom, lako razumljivi i samostalni (da se mogu pročitati bez ponovnog čitanja teksta).
@@ -115,14 +115,21 @@ exports.generateQuiz = async (req, res) => {
 
         // Prompt za AI da vrati isključivo JSON
         const prompt = `
-Pročitaj pažljivo tekst i na temelju njega napravi kviz. Napiši dovoljno pitanja da obuhvatiš sve bitne dijelove teksta.  
+Pročitaj pažljivo *isključivo sadržaj skripte* (ignoriraj uvodne napomene, imena profesora i sve što nije dio skripte). 
+Na temelju tog sadržaja napravi kviz. 
+
+Napiši dovoljno pitanja da obuhvatiš sve bitne dijelove teksta.  
 Svako pitanje treba imati 4 odgovora (označena "a", "b", "c", "d") i označi točan odgovor.  
+
 Vrati **isključivo JSON** u ovom formatu:
 [
   { "pitanje": "...", "odgovori": ["a) ...","b) ...","c) ...","d) ..."], "tocan": "b" }
 ]
-Tekst: ${clipped}
+
+Sadržaj skripte:
+${clipped}
 `;
+
 
         const answer = await callAI(prompt);
 

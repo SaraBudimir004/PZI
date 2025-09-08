@@ -34,47 +34,42 @@ const handleSubmit = async () => {
   error.value = '';
 
   try {
-    // pokušaj login kao admin
-    const res = await loginAdmin(username.value, password.value);
+    const resUser = await loginUser(username.value, password.value);
 
-    // Spremi token, role i user objekt
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('role', 'admin');
+    localStorage.setItem('token', resUser.data.token);
+    localStorage.setItem('role', 'user');
     localStorage.setItem('user', JSON.stringify({
-      name: username.value,
-      avatar: ''
+      name: resUser.data.user.username || username.value,
+      avatar: resUser.data.user.avatar || ''
     }));
 
-    router.push('/admin-panel');
-
-  } catch (adminErr) {
-    console.log("Admin login failed:", adminErr);
+    router.push('/uploadpdf');
+  } catch (userErr) {
+    console.log("User login failed:", userErr);
 
     try {
-      // login običnog korisnika
-      const resUser = await loginUser(username.value, password.value);
+      const resAdmin = await loginAdmin(username.value, password.value);
 
-      localStorage.setItem('token', resUser.data.token);
-      localStorage.setItem('role', 'user');
+      localStorage.setItem('token', resAdmin.data.token);
+      localStorage.setItem('role', 'admin');
       localStorage.setItem('user', JSON.stringify({
-        name: resUser.data.user.username || username.value,
-        avatar: resUser.data.user.avatar || ''
+        name: username.value,
+        avatar: ''
       }));
 
-      router.push('/uploadpdf');
-
-    } catch (userErr) {
-      console.error("User login failed:", userErr);
-      error.value = userErr.response?.data?.message || 'Neispravni podaci za prijavu';
+      router.push('/admin-panel');
+    } catch (adminErr) {
+      console.error("Admin login failed:", adminErr);
+      error.value = adminErr.response?.data?.message || 'Neispravni podaci za prijavu';
     }
   }
 };
+
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-/* Container - pozadina cijelog ekrana */
 .register-container {
   position: relative;
   width: 100%;
@@ -82,7 +77,7 @@ const handleSubmit = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 10px; /* malo paddinga sa strane */
+  padding: 0 10px;
   background-image: url('../assets/Grid.png');
   background-position: center;
   background-repeat: no-repeat;
@@ -99,7 +94,6 @@ const handleSubmit = async () => {
   z-index: 1;
 }
 
-/* Centrirani sadržaj */
 .register-content {
   position: relative;
   z-index: 2;
@@ -116,7 +110,6 @@ const handleSubmit = async () => {
   text-align: center;
 }
 
-/* Naslov i podnaslov */
 .register-title {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
@@ -133,7 +126,6 @@ const handleSubmit = async () => {
   margin: 0;
 }
 
-/* Form inputi */
 .register-form {
   display: flex;
   flex-direction: column;
@@ -162,7 +154,6 @@ const handleSubmit = async () => {
   box-shadow: 0 0 10px #70FCFB;
 }
 
-/* Gumb prijave */
 .register-btn {
   padding: 14px 0;
   background: linear-gradient(135deg, #70FCFB, #42CFEA);
@@ -183,7 +174,6 @@ const handleSubmit = async () => {
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
 
-/* Link za registraciju */
 .login-link {
   font-family: 'Poppins', sans-serif;
   font-size: 0.9rem;
@@ -196,7 +186,6 @@ const handleSubmit = async () => {
   margin-left: 5px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .register-content {
     max-width: 400px;

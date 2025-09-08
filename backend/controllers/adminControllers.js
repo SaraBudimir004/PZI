@@ -8,7 +8,7 @@ exports.adminLogin = async (req, res) => {
     const { username, password } = req.body;
     try {
         const user = await User.findOne({ username, role: 'admin' });
-        if (!user) return res.status(401).json({ message: 'Ne postoji admin s tim korisničkim imenom.' });
+        if (!user) return res.status(401).json({ message: 'Korisnik nije pronađen.' });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: 'Pogrešna lozinka.' });

@@ -42,8 +42,7 @@ const handleSubmit = async () => {
   try {
     const data = { username: username.value, email: email.value, password: password.value };
     const res = await registerUser(data);
-    success.value = res.message; // npr. 'Registracija uspješna.'
-    // nakon uspjeha, možeš redirectati korisnika
+    success.value = res.message;
     setTimeout(() => router.push('/uploadpdf'), 1500);
   } catch (err) {
     error.value = err.message || 'Došlo je do greške';
@@ -82,7 +81,6 @@ const handleSubmit = async () => {
   z-index: 1;
 }
 
-/* Centrirani sadržaj */
 .register-content {
   position: relative;
   z-index: 2;
@@ -99,7 +97,6 @@ const handleSubmit = async () => {
   text-align: center;
 }
 
-/* Naslov i podnaslov */
 .register-title {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
@@ -115,7 +112,6 @@ const handleSubmit = async () => {
   margin: 0;
 }
 
-/* Form inputi */
 .register-form {
   display: flex;
   flex-direction: column;
@@ -144,7 +140,6 @@ const handleSubmit = async () => {
   box-shadow: 0 0 10px #70FCFB;
 }
 
-/* Gumb registracije */
 .register-btn {
   padding: 14px 0;
   background: linear-gradient(135deg, #70FCFB, #42CFEA);
@@ -164,7 +159,7 @@ const handleSubmit = async () => {
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
 
-/* Link za login */
+
 .login-link {
   font-family: 'Poppins', sans-serif;
   font-size: 0.9rem;
@@ -177,7 +172,7 @@ const handleSubmit = async () => {
   margin-left: 5px;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .register-content {
     max-width: 450px;

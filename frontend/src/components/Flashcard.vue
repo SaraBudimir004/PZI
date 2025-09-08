@@ -25,66 +25,52 @@
   </v-app>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
 
-export default {
-  name: "FlashcardsPage",
-  setup() {
-    const route = useRoute();
-    const pdfId = route.query.pdfId;
+const route = useRoute();
+const pdfId = route.query.pdfId;
 
-    const flashcards = ref([]);
-    const currentIndex = ref(0);
-    const flipped = ref(false);
-    const loading = ref(false);
+const flashcards = ref([]);
+const currentIndex = ref(0);
+const flipped = ref(false);
+const loading = ref(false);
 
-    const currentCard = computed(() => flashcards.value[currentIndex.value] || { pitanje: "", odgovor: "" });
+const currentCard = computed(() => flashcards.value[currentIndex.value] || { pitanje: "", odgovor: "" });
 
-    const fetchFlashcards = async () => {
-      if (!pdfId) return;
-      loading.value = true;
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:5000/ai/flashcards/${pdfId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        flashcards.value = res.data.flashcards || [];
-      } catch (err) {
-        console.error(err);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    const flipCard = () => {
-      flipped.value = !flipped.value;
-    };
-
-    const nextCard = (correct = null) => {
-      // correct: true = točno, false = netočno, null = samo iduća
-      flipped.value = false;
-      currentIndex.value = currentIndex.value < flashcards.value.length - 1 ? currentIndex.value + 1 : 0;
-    };
-
-    onMounted(fetchFlashcards);
-
-    return {
-      flashcards,
-      currentCard,
-      flipped,
-      loading,
-      flipCard,
-      nextCard
-    };
+const fetchFlashcards = async () => {
+  if (!pdfId) return;
+  loading.value = true;
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get(`http://localhost:5000/ai/flashcards/${pdfId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    flashcards.value = res.data.flashcards || [];
+  } catch (err) {
+    console.error(err);
+  } finally {
+    loading.value = false;
   }
 };
+
+const flipCard = () => {
+  flipped.value = !flipped.value;
+};
+
+const nextCard = (correct = null) => {
+  flipped.value = false;
+  if (flashcards.value.length === 0) return;
+  currentIndex.value = currentIndex.value < flashcards.value.length - 1 ? currentIndex.value + 1 : 0;
+};
+
+onMounted(fetchFlashcards);
 </script>
 
+
 <style scoped>
-/* Fullscreen tamna pozadina */
 .v-application {
   background-color: #0d0d0d !important;
   min-height: 100vh;

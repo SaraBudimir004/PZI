@@ -20,11 +20,10 @@
 </template>
 
 <script setup>
-import axios from "axios"; 
+import axios from "axios";
 import { useRouter } from "vue-router";
-import { loginGuest } from "../services/auth";
 
-const props = defineProps({
+const { title, subtitle, buttonLink1 } = defineProps({
   title: { type: String, default: "AI POMOĆNIK ZA UČENJE" },
   subtitle: { type: String, default: "Brže i pametnije učenje pomoću AI" },
   buttonLink1: { type: String, default: "/login" }
@@ -37,25 +36,22 @@ const loginAsGuest = async () => {
     let token = localStorage.getItem("guestToken");
 
     if (!token) {
-      // Ako nema tokena, kreiraj novog gosta
-      const res = await axios.post("http://localhost:5000/gost/login"); 
+      const res = await axios.post("http://localhost:5000/gost/login");
       token = res.data.token;
 
-      // Spremi token u localStorage
       localStorage.setItem("guestToken", token);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("guestId", res.data.guestId);
     }
 
-    // Preusmjeri korisnika na upload PDF ili dashboard
     router.push("/uploadpdf");
   } catch (err) {
     console.error("Greška pri prijavi gosta:", err);
     alert("Greška pri prijavi gosta. Pokušajte ponovno.");
   }
 };
-
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');

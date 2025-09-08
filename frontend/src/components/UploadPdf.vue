@@ -62,7 +62,6 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-// Reaktivne varijable
 const dialog = ref(false)
 const pdfName = ref("")
 const file = ref(null)
@@ -71,7 +70,6 @@ const loading = ref(false)
 
 const router = useRouter()
 
-// Funkcija za upload PDF-a (rad i za goste i za korisnike)
 const handleUpload = async () => {
   if (!file.value) return alert("Odaberi PDF datoteku!")
   if (!pdfName.value.trim()) return alert("Unesi ime PDF-a!")
@@ -84,7 +82,6 @@ const handleUpload = async () => {
     formData.append("file", file.value)
     formData.append("name", pdfName.value)
 
-    // Dohvati token (gost ili korisnik)
     const token = localStorage.getItem('token') || localStorage.getItem('guestToken')
     if (!token) {
       message.value = "Niste prijavljeni!"
@@ -126,7 +123,6 @@ const goToDashboard = () => {
 </script>
 
 <style scoped>
-/* Glavni container za upload */
 .upload-container {
    position: relative;
   width: 100%;
@@ -156,7 +152,6 @@ const goToDashboard = () => {
   z-index: 1;
 }
 
-/* Kartica s upload sadržajem */
 .upload-content {
   position: relative;
   z-index: 2;
@@ -174,7 +169,6 @@ const goToDashboard = () => {
   text-align: center;
 }
 
-/* Naslov i podnaslov */
 .upload-title {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
@@ -191,7 +185,6 @@ const goToDashboard = () => {
   margin: 0;
 }
 
-/* Dugme za upload i dashboard (isti stil kao registracija/prijava) */
 .upload-btn {
   background: linear-gradient(135deg, #70FCFB, #42CFEA);
   color: #0D0D0D;
@@ -214,14 +207,12 @@ const goToDashboard = () => {
   background: linear-gradient(135deg, #42CFEA, #70FCFB);
 }
 
-/* Poruka o uploadu */
 .upload-message {
   margin-top: 10px;
   color: #70FCFB;
   font-weight: 600;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .upload-content {
     max-width: 450px;

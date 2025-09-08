@@ -19,11 +19,11 @@ const guestLogin = async (req, res) => {
           });
         }
       } catch (err) {
-        // Token istekao → kreirat ćemo novog gosta
+
       }
     }
 
-    // Ako token ne postoji ili je istekao → kreiraj novog gosta
+    // Ako token ne postoji ili je istekao kreiraj novog gosta
     const tokenId = uuidv4();
     const guest = new Guest({ tokenId });
     await guest.save();
@@ -57,6 +57,6 @@ const guestLimit = async (req, res, next) => {
   } catch (err) {
     res.status(500).json({ message: "Greška pri provjeri gosta", error: err.message });
   }
-};
+}; 
 
 module.exports = { guestLogin, guestLimit };

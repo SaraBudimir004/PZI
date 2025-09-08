@@ -7,19 +7,15 @@
       style="backdrop-filter: blur(10px); padding: 0 24px;" >
   <v-toolbar-title class="logo">AI Učitelj</v-toolbar-title>
 
-  <!-- Spacer -->
   <v-spacer></v-spacer>
 
-  <!-- Desktop links -->
   <v-btn text class="nav-link" to="/">Home</v-btn>
   <v-btn text class="nav-link" to="/uploadpdf">Učitaj Skriptu</v-btn>
   <v-btn class="nav-btn" to="/login">Sign In</v-btn>
 
-  <!-- Mobile hamburger -->
   <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
   </v-app-bar>
 
-  <!-- Mobile drawer -->
   <v-navigation-drawer
       v-model="drawer"
       app
