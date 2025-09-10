@@ -5,25 +5,21 @@ const pdfParse = require("pdf-parse");
 
 exports.uploadPdf = async (req, res) => {
     try {
-        //Provjera da li je poslan file
         if (!req.file) {
             return res.status(400).json({ error: "PDF nije poslan" });
         }
-        console.log(req.user, "req.user prije 1 kreiranja PDF-a")
-        // Učitaj PDF iz temp mape (koju multer kreira)
         const pdfBuffer = fs.readFileSync(req.file.path);
         const pdfData = await pdfParse(pdfBuffer);
 
         const pageCount = pdfData.numpages;
         const pdfText = pdfData.text?.trim() || "";
 
-        //Kreiraj novi PDF dokument za bazu
         const newPdf = new Pdf({
           filename: req.file.filename,               
           originalName: req.body.name || req.file.originalname,
           data: pdfBuffer,
-          user: req.user.role === "user" ? req.user.id : null,        // Samo ako je registrirani korisnik
-          guestTokenId: req.user.role === "guest" ? req.user.tokenId : null, // Samo ako je gost
+          user: req.user.role === "user" ? req.user.id : null,        
+          guestTokenId: req.user.role === "guest" ? req.user.tokenId : null, 
           text: pdfText,
           filePath: req.file.path,
           contentType: req.file.mimetype,
@@ -31,16 +27,8 @@ exports.uploadPdf = async (req, res) => {
           uploadedAt: new Date()
       });
 
-
-        console.log(req.user, "req.user prije kreiranja PDF-a")
-
-        // Spremi PDF u MongoDB
         await newPdf.save();
 
-
-
-        //Vrati podatke frontendu
-        console.log("Parsed PDF text:", pdfText); // ispravno logiranje
         res.json({
             message: "PDF je uspješno uploadan i spremljen u bazu!",
             pdfId: newPdf._id,
@@ -72,7 +60,6 @@ exports.getPdfById = async (req, res) => {
     }
 };
 
-// Dohvati sve PDF-ove korisnika ili gosta
 exports.getUserPdfs = async (req, res) => {
     try {
         let query = {};
@@ -130,7 +117,6 @@ exports.deletePdf = async (req, res) => {
 // Dohvati sve PDF-ove gosta
 exports.getGuestPdfs = async (req, res) => {
     try {
-        // req.user.role i req.user.tokenId dolaze iz protect middleware-a
         if (req.user.role !== "guest") {
             return res.status(403).json({ message: "Samo gosti mogu pristupiti ovoj ruti" });
         }

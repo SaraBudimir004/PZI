@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const guestSchema = new mongoose.Schema({
-    tokenId: { type: String, unique: true },   // ID gosta (vežemo ga uz JWT)
-    uploads: { type: Number, default: 0 },     // koliko je fajlova uploadano
+    tokenId: { type: String, unique: true },   
+    uploads: { type: Number, default: 0 },     
     expiresAt: { 
         type: Date, 
-        default: () => Date.now() + 3*24*60*60*1000, // 3 dana od logina
-        index: { expires: '3d' } // Mongo automatski briše nakon 3 dana
+        default: () => Date.now() + 3*24*60*60*1000, 
+        index: { expires: '3d' } //automatski briše nakon 3 dana
     }
 });
 

@@ -1,13 +1,11 @@
-// controllers/pdfController.js
 const fs = require("fs");
 const axios = require("axios");
 const dotenv = require("dotenv");
 const pdfParse = require("pdf-parse");
-const Pdf = require("../models/pdf"); // tvoj PDF model
+const Pdf = require("../models/pdf"); 
 
 dotenv.config();
 
-// Helper funkcija za poziv AI API-ja
 async function callAI(prompt) {
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
     const GROQ_MODEL = "llama-3.3-70b-versatile";
@@ -40,15 +38,15 @@ exports.uploadPdf = async (req, res) => {
         const text = data.text?.trim() || "";
 
         const newPdf = new Pdf({
-            user: req.user.id,             // ID prijavljenog korisnika
+            user: req.user.id,             
             filename: req.file.filename,
             originalName: req.file.originalname,
-            text: text                     // <--- Sprema text za kasniju obradu
+            text: text                     
         });
 
         await newPdf.save();
 
-        fs.unlink(req.file.path, () => {}); // obriši temp file
+        fs.unlink(req.file.path, () => {}); 
 
         res.json({ message: "PDF spremljen u bazu", pdfId: newPdf._id });
     } catch (err) {
@@ -90,7 +88,7 @@ ${clipped}
             // Regex za izvlačenje JSON liste unutar stringa
             const match = answer.match(/\[\s*{[\s\S]*}\s*\]/);
             if (match) {
-                flashcards = JSON.parse(match[0]); // parsiraj stvarni JSON
+                flashcards = JSON.parse(match[0]); 
             } else {
                 flashcards = [{ pitanje: "Greška pri parsiranju", odgovor: answer }];
             }
@@ -110,10 +108,8 @@ exports.generateQuiz = async (req, res) => {
         const pdf = await Pdf.findById(req.params.pdfId);
         if (!pdf) return res.status(404).json({ error: "PDF nije pronađen" });
 
-        // Uzmi prvih 20 000 znakova da AI ne preoptereti prompt
         const clipped = pdf.text?.slice(0, 20000) || "";
 
-        // Prompt za AI da vrati isključivo JSON
         const prompt = `
 Pročitaj pažljivo *isključivo sadržaj skripte* (ignoriraj uvodne napomene, imena profesora i sve što nije dio skripte). 
 Na temelju tog sadržaja napravi kviz. 
@@ -135,12 +131,10 @@ ${clipped}
 
         let quiz = [];
         try {
-            // pokušaj parsiranja AI odgovora kao JSON
             quiz = JSON.parse(answer);
             if (!Array.isArray(quiz)) throw new Error("Odgovor nije niz");
         } catch (err) {
             console.error("Greška pri parsiranju AI odgovora:", err);
-            // fallback ako AI ne vrati validan JSON
             quiz = [{ pitanje: "AI odgovor nije parsiran", odgovori: [], tocan: "" }];
         }
 

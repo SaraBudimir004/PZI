@@ -93,7 +93,7 @@ exports.getPdfContent = async (req, res) => {
             totalPages: pdf.totalPages,
             uploadedAt: pdf.createdAt,
             user: pdf.user,
-            text: pdf.text, // Ovdje je sadržaj PDF-a
+            text: pdf.text, 
         });
     } catch (err) {
         console.error(err);

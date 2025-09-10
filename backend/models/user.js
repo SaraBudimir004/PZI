@@ -3,11 +3,11 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
-    email: { type: String, unique: true }, // email nije obavezno, ali ako postoji mora biti unique
+    email: { type: String, unique: true },
     password: { type: String, required: true },
     role: {
         type: String,
-        enum: ['admin', 'user', 'guest'], // ovo su sve role koje koristiš
+        enum: ['admin', 'user', 'guest'], 
         default: 'user'
     }
 });

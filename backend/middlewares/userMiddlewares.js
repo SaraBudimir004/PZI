@@ -22,8 +22,6 @@ const protect = async (req, res, next) => {
             if (!user) {
                 return res.status(401).json({ message: "Korisnik nije pronađen." });
             }
-            console.log(decoded, "decoded token")
-            console.log(user, "user iz DB")
             req.user = { id: user._id, role: user.role, name: user.name };
             next();
         } else {

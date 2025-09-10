@@ -13,15 +13,14 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5175",
+  origin: "http://localhost:5173",
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,               // ako šalješ cookie/token
+  credentials: true,               
 }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Povezivanje na MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
